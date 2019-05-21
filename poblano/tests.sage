@@ -9,7 +9,7 @@ from poblano import PoblanoRing, PoblanoExpression
 
 
 def test_constant_poblano_expression_diff_and_jump():
-    s = PoblanoRing(['x', 'y'])
+    s = PoblanoRing('test', ['x', 'y'])
     x, y = s.vars
     
     a = s.fxn('a')
@@ -18,7 +18,7 @@ def test_constant_poblano_expression_diff_and_jump():
     return bool(s.jump_coeff(a, x) == 0) and bool(s.jump_coeff(a, y) == 0) and bool(s.jump_coeff(b, x) == 0) and bool(s.jump_coeff(b, y) == 0)
 
 def test_poblano_expression_construction_options():
-    s = PoblanoRing(['x', 'y'])
+    s = PoblanoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -62,7 +62,7 @@ def test_poblano_expression_construction_options():
     return test_passed
 
 def test_poblano_expression_vs_space_diff_and_jump():
-    s = PoblanoRing(['x', 'y'])
+    s = PoblanoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -100,7 +100,7 @@ def test_poblano_expression_vs_space_diff_and_jump():
     return test_passed
 
 def test_jump_expansion_accuracy_simple_poblano_expression():
-    s = PoblanoRing(['x', 'y'])
+    s = PoblanoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -111,7 +111,7 @@ def test_jump_expansion_accuracy_simple_poblano_expression():
     return bool(h.jump_coeff(x) == h_jx) and bool(h.jump_coeff(y) == h_jy) and bool(s.jump_coeff(h, x) == h_jx) and bool(s.jump_coeff(h, y) == h_jy)
     
 def test_jump_expansion_accuracy_poblano_expression_and_constants():
-    s = PoblanoRing(['x', 'y'])
+    s = PoblanoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -139,7 +139,7 @@ def test_jump_expansion_accuracy_poblano_expression_and_constants():
     return test_passed
     
 def test_jump_expansion_accuracy_binary_operations():
-    s = PoblanoRing(['x', 'y'])
+    s = PoblanoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -171,7 +171,7 @@ def test_jump_expansion_accuracy_binary_operations():
     return test_passed
     
 def test_jump_expansion_accuracy_integer_powers():
-    s = PoblanoRing(['x', 'y'])
+    s = PoblanoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -201,7 +201,7 @@ def test_jump_expansion_accuracy_integer_powers():
     return test_passed
     
 def test_jump_expansion_accuracy_noninteger_powers():
-    s = PoblanoRing(['x', 'y'])
+    s = PoblanoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -227,7 +227,7 @@ def test_jump_expansion_accuracy_noninteger_powers():
     return test_passed
     
 def test_jump_expansion_accuracy_unary_operations():
-    s = PoblanoRing(['x', 'y'])
+    s = PoblanoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -251,7 +251,7 @@ def test_jump_expansion_accuracy_unary_operations():
     return test_passed
     
 def test_jump_expansion_accuracy_polynomial_consistency():
-    s = PoblanoRing(['x', 'y'])
+    s = PoblanoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -273,7 +273,7 @@ def test_jump_expansion_accuracy_polynomial_consistency():
 
 
 def test_differentiation_over_constants_and_expands():
-    s = PoblanoRing(['x', 'y'], {'x': '\\mathrm{x}'})
+    s = PoblanoRing('test', ['x', 'y'], {'x': '\\mathrm{x}'})
     x, y = s.vars
     d = s.d
 
@@ -359,7 +359,7 @@ def test_differentiation_over_constants_and_expands():
     return test_passed
 
 def test_is_constant():
-    s = PoblanoRing(['x', 'y'], {'x': '\\mathrm{x}'})
+    s = PoblanoRing('test', ['x', 'y'], {'x': '\\mathrm{x}'})
     x, y = s.vars
     d = s.d
 

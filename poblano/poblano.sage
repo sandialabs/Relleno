@@ -190,10 +190,12 @@ class PoblanoRing(SageObject):
 
     **Constructor**: build a PoblanoRing from a set of fundamental variables
 
+    :param name: the name of this PoblanoRing object, must be a valid Python identifier (no spaces or dashes)
     :param base_variables: a list of strings representing the fundamental variables of this ring
     :param latex_name_dict: a dictionary that allows special LaTeX representations of the variables (optional, default: None)
     """
-    def __init__(self, base_variables, latex_name_dict=None):
+    def __init__(self, name, base_variables, latex_name_dict=None):
+        self._name = name
         if latex_name_dict is None:
             self._vars = [SageVariable(b) for b in base_variables]
         else:
@@ -328,13 +330,13 @@ class PoblanoRing(SageObject):
                 if bool(expr == self._tmps[t]['expression']) and type == self._tmps[t]['avg type']:
                     return self._tmps[t]['temporary']
 
-            var_name = self._tmpsymbol + str(len(self._tmps))
+            var_name = self._name + '_' + self._tmpsymbol + str(len(self._tmps))
 
             latex_expr = latex(expr)
             if isinstance(expr, PoblanoExpression):
                 latex_expr = latex(expr.symbol)
             if type in self._mark_dict:
-                latex_name = self._mark_dict[type] + '{\\left[' + latex_expr + '\\right]}\,'
+                latex_name = self._mark_dict[type] + '{' + latex_expr + '}\,'
             else:
                 latex_name = '{\\left[\\left[' + latex_expr + '\\right]\\right]_{\\mathrm{' + type + '}}}\,'
 
