@@ -1,7 +1,6 @@
 import os
 from setuptools import setup
 from setuptools.command.install import install
-from setuptools.command.test import test
 
 def readfile(filename):
     with open(filename) as f:
@@ -24,19 +23,15 @@ class SageInstall(install):
         print('Finished preparsing!\n\n')
         install.run(self)
 
-class SageTest(test):
-    def run_tests(self):
-        errno = os.system("sage -t --force-lib poblano/sage.tests")
-        if errno != 0:
-            sys.exit(1)
-
 setup(
     name = 'poblano',
     version = readfile('VERSION'),
     description='A SageMath library for jump expansions and Jacobian matrices of conservation laws and entropy stability analysis',
     long_description = readfile('README.md'),
+    license='BSD-2-Clause',
     author='Michael A. Hansen',
     author_email='mahanse@sandia.gov',
     packages = ['poblano'],
-    cmdclass = {'install': SageInstall}
-) # license + url ???
+    cmdclass = {'install': SageInstall},
+    url = 'https://github.com/michael-a-hansen/poblano.git'
+)
