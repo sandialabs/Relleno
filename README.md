@@ -2,7 +2,7 @@ poblano is a SageMath library that facilitates derivations of numerical flux fun
 
 
 # Clone, Install, and Test
-To use poblano you'll need SageMath installed on your computer, and to clone the repo here:
+To use poblano you'll need SageMath installed on your computer (see http://www.sagemath.org/index.html), and to clone the repo here:
 
 ```
 git clone https://github.com/michael-a-hansen/poblano.git
