@@ -1,3 +1,4 @@
 *.egg*
 *.pyc
 *.sage.py
+demo/.ipynb_checkpoints/
