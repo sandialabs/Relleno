@@ -1,3 +1,21 @@
+# Relleno - a SageMath library for automatic jump expansion and convenient calculus                        
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).                       
+#                                                                                                        
+# This program is free software: you can redistribute it and/or modify                                     
+# it under the terms of the GNU General Public License as published by                                     
+# the Free Software Foundation, either version 3 of the License, or                                        
+# (at your option) any later version.                                                                      
+#                                                                                                          
+# This program is distributed in the hope that it will be useful,                                          
+# but without any warranty; without even the implied warranty of                                           
+# merchantability or fitness for a particular purpose.  See the                                            
+# GNU General Public License for more details.                                                             
+#                                                                                                          
+# You should have received a copy of the GNU General Public License                                        
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.                                    
+#                                                                                                          
+# Questions? Contact Mike Hansen (mahanse@sandia.gov)      
+
 from sage.all import show, assume, diff, sqrt, exp, latex, log, prod, vector, matrix, identity_matrix
 from sage.all import var as SageVariable
 from sage.all import SR as Symbols, RR as Reals, ZZ as Integers
@@ -5,11 +23,11 @@ from sage.all import SageObject
 
 from sys import exit
 
-from poblano import PoblanoRing, PoblanoExpression
+from relleno import RellenoRing, RellenoExpression
 
 
-def test_constant_poblano_expression_diff_and_jump():
-    s = PoblanoRing('test', ['x', 'y'])
+def test_constant_relleno_expression_diff_and_jump():
+    s = RellenoRing('test', ['x', 'y'])
     x, y = s.vars
     
     a = s.fxn('a')
@@ -17,8 +35,8 @@ def test_constant_poblano_expression_diff_and_jump():
     
     return bool(s.jump_coeff(a, x) == 0) and bool(s.jump_coeff(a, y) == 0) and bool(s.jump_coeff(b, x) == 0) and bool(s.jump_coeff(b, y) == 0)
 
-def test_poblano_expression_construction_options():
-    s = PoblanoRing('test', ['x', 'y'])
+def test_relleno_expression_construction_options():
+    s = RellenoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -61,8 +79,8 @@ def test_poblano_expression_construction_options():
 
     return test_passed
 
-def test_poblano_expression_vs_space_diff_and_jump():
-    s = PoblanoRing('test', ['x', 'y'])
+def test_relleno_expression_vs_space_diff_and_jump():
+    s = RellenoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -99,8 +117,8 @@ def test_poblano_expression_vs_space_diff_and_jump():
 
     return test_passed
 
-def test_jump_expansion_accuracy_simple_poblano_expression():
-    s = PoblanoRing('test', ['x', 'y'])
+def test_jump_expansion_accuracy_simple_relleno_expression():
+    s = RellenoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -110,8 +128,8 @@ def test_jump_expansion_accuracy_simple_poblano_expression():
     
     return bool(h.jump_coeff(x) == h_jx) and bool(h.jump_coeff(y) == h_jy) and bool(s.jump_coeff(h, x) == h_jx) and bool(s.jump_coeff(h, y) == h_jy)
     
-def test_jump_expansion_accuracy_poblano_expression_and_constants():
-    s = PoblanoRing('test', ['x', 'y'])
+def test_jump_expansion_accuracy_relleno_expression_and_constants():
+    s = RellenoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -139,7 +157,7 @@ def test_jump_expansion_accuracy_poblano_expression_and_constants():
     return test_passed
     
 def test_jump_expansion_accuracy_binary_operations():
-    s = PoblanoRing('test', ['x', 'y'])
+    s = RellenoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -171,7 +189,7 @@ def test_jump_expansion_accuracy_binary_operations():
     return test_passed
     
 def test_jump_expansion_accuracy_integer_powers():
-    s = PoblanoRing('test', ['x', 'y'])
+    s = RellenoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -201,7 +219,7 @@ def test_jump_expansion_accuracy_integer_powers():
     return test_passed
     
 def test_jump_expansion_accuracy_noninteger_powers():
-    s = PoblanoRing('test', ['x', 'y'])
+    s = RellenoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -227,7 +245,7 @@ def test_jump_expansion_accuracy_noninteger_powers():
     return test_passed
     
 def test_jump_expansion_accuracy_unary_operations():
-    s = PoblanoRing('test', ['x', 'y'])
+    s = RellenoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -251,7 +269,7 @@ def test_jump_expansion_accuracy_unary_operations():
     return test_passed
     
 def test_jump_expansion_accuracy_polynomial_consistency():
-    s = PoblanoRing('test', ['x', 'y'])
+    s = RellenoRing('test', ['x', 'y'])
     x, y = s.vars
     d = s.d
     
@@ -273,7 +291,7 @@ def test_jump_expansion_accuracy_polynomial_consistency():
 
 
 def test_differentiation_over_constants_and_expands():
-    s = PoblanoRing('test', ['x', 'y'], {'x': '\\mathrm{x}'})
+    s = RellenoRing('test', ['x', 'y'], {'x': '\\mathrm{x}'})
     x, y = s.vars
     d = s.d
 
@@ -285,7 +303,7 @@ def test_differentiation_over_constants_and_expands():
 
     c = s.fxn('c', 2 * sqrt(2) * af + bf)
 
-    # we test across constants that are numbers (2, 3), numeric symbols (sqrt(2), sqrt(3)), Sage variables (a, b), and constant PoblanoExpression objects (af, bf)
+    # we test across constants that are numbers (2, 3), numeric symbols (sqrt(2), sqrt(3)), Sage variables (a, b), and constant RellenoExpression objects (af, bf)
     f_1 = s.fxn('f_1', 2 * x + 3 * y)
     f_2 = s.fxn('f_2', sqrt(2) * x + sqrt(3) * y)
     f_3 = s.fxn('f_3', a * x + b * y)
@@ -359,7 +377,7 @@ def test_differentiation_over_constants_and_expands():
     return test_passed
 
 def test_is_constant():
-    s = PoblanoRing('test', ['x', 'y'], {'x': '\\mathrm{x}'})
+    s = RellenoRing('test', ['x', 'y'], {'x': '\\mathrm{x}'})
     x, y = s.vars
     d = s.d
 
@@ -371,7 +389,7 @@ def test_is_constant():
 
     c = s.fxn('c', 2 * sqrt(2) * af + bf)
 
-    # we test across constants that are numbers (2, 3), numeric symbols (sqrt(2), sqrt(3)), Sage variables (a, b), and constant PoblanoExpression objects (af, bf)
+    # we test across constants that are numbers (2, 3), numeric symbols (sqrt(2), sqrt(3)), Sage variables (a, b), and constant RellenoExpression objects (af, bf)
     f_1 = s.fxn('f_1', 2 * x + 3 * y)
     f_2 = s.fxn('f_2', sqrt(2) * x + sqrt(3) * y)
     f_3 = s.fxn('f_3', a * x + b * y)
@@ -425,11 +443,11 @@ def test_is_constant():
     
     return test_passed
 
-if test_constant_poblano_expression_diff_and_jump() and \
-       test_poblano_expression_construction_options() and \
-       test_poblano_expression_vs_space_diff_and_jump() and \
-       test_jump_expansion_accuracy_simple_poblano_expression() and \
-       test_jump_expansion_accuracy_poblano_expression_and_constants() and \
+if test_constant_relleno_expression_diff_and_jump() and \
+       test_relleno_expression_construction_options() and \
+       test_relleno_expression_vs_space_diff_and_jump() and \
+       test_jump_expansion_accuracy_simple_relleno_expression() and \
+       test_jump_expansion_accuracy_relleno_expression_and_constants() and \
        test_jump_expansion_accuracy_binary_operations() and \
        test_jump_expansion_accuracy_integer_powers() and \
        test_jump_expansion_accuracy_noninteger_powers() and \

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>calculus_with_hidden_values_and_derivatives</title>
+<title>demo_calculus</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -11751,7 +11751,29 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Some-calculus-with-poblano:-the-benefit-of-'hidden'-values-and-differentials">Some calculus with poblano: the benefit of 'hidden' values and differentials<a class="anchor-link" href="#Some-calculus-with-poblano:-the-benefit-of-'hidden'-values-and-differentials">&#182;</a></h2>
+<h2 id="Some-calculus-with-Relleno:-the-benefit-of-'hidden'-values-and-differentials">Some calculus with Relleno: the benefit of 'hidden' values and differentials<a class="anchor-link" href="#Some-calculus-with-Relleno:-the-benefit-of-'hidden'-values-and-differentials">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Relleno - a SageMath library for automatic jump expansion and convenient calculus<br>
+Copyright 2019 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).</p>
+<p>This program is free software: you can redistribute it and/or modify<br>
+it under the terms of the GNU General Public License as published by<br>
+the Free Software Foundation, either version 3 of the License, or<br>
+(at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful,<br>
+but without any warranty; without even the implied warranty of<br>
+merchantability or fitness for a particular purpose.  See the<br>
+GNU General Public License for more details.</p>
+<p>You should have received a copy of the GNU General Public License<br>
+along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+<p>Questions? Contact Mike Hansen (mahanse@sandia.gov)</p>
+
 </div>
 </div>
 </div>
@@ -11760,7 +11782,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">poblano</span> <span class="kn">import</span> <span class="n">PoblanoRing</span> <span class="k">as</span> <span class="n">Poblano</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">relleno</span> <span class="kn">import</span> <span class="n">RellenoRing</span> <span class="k">as</span> <span class="n">Relleno</span>
 <span class="o">%</span><span class="k">display</span> latex
 </pre></div>
 
@@ -11774,7 +11796,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="First-we-make-a-Poblano-object">First we make a Poblano object<a class="anchor-link" href="#First-we-make-a-Poblano-object">&#182;</a></h4><p>This requires us to specify the variables on which functions will depend.</p>
+<h4 id="First-we-make-a-Relleno-object">First we make a Relleno object<a class="anchor-link" href="#First-we-make-a-Relleno-object">&#182;</a></h4><p>This requires us to specify the variables on which functions will depend.</p>
 <p>Here we simply have a two-dimensional space defined by variables <code>x</code> and <code>y</code>.</p>
 <p>Notice how we can (optionally) provide a special LaTeX representation of the variables.</p>
 
@@ -11786,7 +11808,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">Poblano</span><span class="p">(</span><span class="s1">&#39;demo&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">mathsf{Y}&#39;</span><span class="p">})</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">Relleno</span><span class="p">(</span><span class="s1">&#39;demo&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">mathsf{Y}&#39;</span><span class="p">})</span>
 <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">vars</span>
 
 <span class="n">show</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -11826,10 +11848,10 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="Now-we-can-make-some-constants-and-functions">Now we can make some constants and functions<a class="anchor-link" href="#Now-we-can-make-some-constants-and-functions">&#182;</a></h4><p>To gain the benefits of poblano, use the <code>fxn</code> method on the poblano object <code>r</code> to make constants and functions.</p>
+<h4 id="Now-we-can-make-some-constants-and-functions">Now we can make some constants and functions<a class="anchor-link" href="#Now-we-can-make-some-constants-and-functions">&#182;</a></h4><p>To gain the benefits of Relleno, use the <code>fxn</code> method on the Relleno object <code>r</code> to make constants and functions.</p>
 <p>To make a constant, one simply provides a symbol to <code>fxn</code>, as follows for <code>a</code>.</p>
-<p>This produces a <code>PoblanoExpression</code> object, which has its symbol used in expressions, a value hidden behind the symbol (to keep expressions simple), a dictionary useful for substitutions later on, and a total differential, which is zero for a constant.</p>
-<p>With the <code>print</code> function we can quickly look at a <code>PoblanoExpression</code> and see if it is constant. We can also use the <code>is_constant()</code> method allows us to check too.</p>
+<p>This produces a <code>RellenoExpression</code> object, which has its symbol used in expressions, a value hidden behind the symbol (to keep expressions simple), a dictionary useful for substitutions later on, and a total differential, which is zero for a constant.</p>
+<p>With the <code>print</code> function we can quickly look at a <code>RellenoExpression</code> and see if it is constant. We can also use the <code>is_constant()</code> method allows us to check too.</p>
 
 </div>
 </div>
@@ -11892,7 +11914,7 @@ div#notebook {
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>PoblanoExpr: ( a : a ( constant))
+<pre>RellenoExpr: ( a : a ( constant))
 </pre>
 </div>
 </div>
@@ -11915,7 +11937,7 @@ div#notebook {
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Next we'll make a function that depends on the variables.</p>
-<p>Note that here the symbol and value of <code>f</code> are different, the total differential is automatically computed from the specified value, and that poblano identifies <code>f</code> as nonconstant.</p>
+<p>Note that here the symbol and value of <code>f</code> are different, the total differential is automatically computed from the specified value, and that Relleno identifies <code>f</code> as nonconstant.</p>
 
 </div>
 </div>
@@ -11978,7 +12000,7 @@ div#notebook {
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>PoblanoExpr: ( f : {x}^{2} ( nonconstant))
+<pre>RellenoExpr: ( f : {x}^{2} ( nonconstant))
 </pre>
 </div>
 </div>
@@ -12000,7 +12022,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="Hiding-nasty-values-and-derivatives">Hiding nasty values and derivatives<a class="anchor-link" href="#Hiding-nasty-values-and-derivatives">&#182;</a></h4><p>A key capability of <code>PoblanoExpression</code> objects is that we can specify the total differential independently of the value, as below (in fact one can specify a differential without giving a value at all).</p>
+<h4 id="Hiding-nasty-values-and-derivatives">Hiding nasty values and derivatives<a class="anchor-link" href="#Hiding-nasty-values-and-derivatives">&#182;</a></h4><p>A key capability of <code>RellenoExpression</code> objects is that we can specify the total differential independently of the value, as below (in fact one can specify a differential without giving a value at all).</p>
 <p>Here we make two Sage variables, <code>g_x</code> and <code>g_y</code>, which are the partial derivatives of <code>g</code> with respect to <code>x</code> and <code>y</code>.
 We do this to avoid letting Sage go berserk computing the nasty derivatives of the value of <code>g</code>, which is a nontrivial expression.</p>
 
@@ -12070,7 +12092,7 @@ We do this to avoid letting Sage go berserk computing the nasty derivatives of t
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>PoblanoExpr: ( g : e^{\left(\tanh\left({x} + \cos\left({\mathsf{Y}}\right)\right)^{a + {x}}\right)} ( nonconstant))
+<pre>RellenoExpr: ( g : e^{\left(\tanh\left({x} + \cos\left({\mathsf{Y}}\right)\right)^{a + {x}}\right)} ( nonconstant))
 </pre>
 </div>
 </div>
@@ -12092,9 +12114,9 @@ We do this to avoid letting Sage go berserk computing the nasty derivatives of t
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Below we show that a <code>PoblanoExpression</code> is always represented by its symbol (in particular, note <code>g</code> in this case), which yields dramatically simpler results when one asks Sage to simplify an expression, which can easily produce unwieldly expressions.
+<p>Below we show that a <code>RellenoExpression</code> is always represented by its symbol (in particular, note <code>g</code> in this case), which yields dramatically simpler results when one asks Sage to simplify an expression, which can easily produce unwieldly expressions.
 This occurs below when we ask Sage to simplify the expression.
-When the complicated value of <code>g</code> is 'hidden' behind the symbol, thanks to it being a <code>PoblanoExpression</code>, the expression is nice and simple.
+When the complicated value of <code>g</code> is 'hidden' behind the symbol, thanks to it being a <code>RellenoExpression</code>, the expression is nice and simple.
 On the other hand, when the full value of the expression is used, the expression becomes practically useless.</p>
 <p>Next we'll demonstrate how nice it is to 'hide' nasty derivatives too.</p>
 
@@ -12143,7 +12165,7 @@ On the other hand, when the full value of the expression is used, the expression
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Time-to-calculate-derivatives">Time to calculate derivatives<a class="anchor-link" href="#Time-to-calculate-derivatives">&#182;</a></h3><p>To calculate derivatives of expressions involving <code>PoblanoExpression</code> objects, one should use the <code>diff</code> method of <code>r</code>.</p>
+<h3 id="Time-to-calculate-derivatives">Time to calculate derivatives<a class="anchor-link" href="#Time-to-calculate-derivatives">&#182;</a></h3><p>To calculate derivatives of expressions involving <code>RellenoExpression</code> objects, one should use the <code>diff</code> method of <code>r</code>.</p>
 
 </div>
 </div>
@@ -12209,7 +12231,7 @@ On the other hand, when the full value of the expression is used, the expression
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We can build expressions of Sage and poblano expressions without special syntax (an exception is operators such as <code>cos(f)</code> or <code>exp(f)</code>, in which one must provide the symbol of a <code>PoblanoExpression</code>, e.g., <code>cos(f.symbol)</code>.).</p>
+<p>We can build expressions of Sage and Relleno expressions without special syntax (an exception is operators such as <code>cos(f)</code> or <code>exp(f)</code>, in which one must provide the symbol of a <code>RellenoExpression</code>, e.g., <code>cos(f.symbol)</code>.).</p>
 <p>For instance, <code>a * g + f</code> is a valid expression, and note that <code>g_x</code> and <code>g_y</code> show up in the derivative of <code>g</code>.</p>
 
 </div>

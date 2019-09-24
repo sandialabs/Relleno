@@ -1,0 +1,456 @@
+% Relleno - a SageMath library for automatic jump expansion and convenient calculus
+% Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%
+% Questions? Contact Mike Hansen (mahanse@sandia.gov)
+%
+
+\documentclass[10pt]{article}
+
+\usepackage{mathpazo}
+\usepackage[T1]{fontenc}
+
+\usepackage[margin=1.25in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+
+%\renewcommand{\j}[1]{\mathcal{J}\left(#1\right)}
+\renewcommand{\j}[1]{\Delta #1}
+\newcommand{\jr}[2]{\mathcal{R}^{#1}_{#2}}
+\newcommand{\je}[1]{\mathcal{E}\left(#1\right)}
+\renewcommand{\v}[1]{\boldsymbol{#1}}
+\renewcommand{\d}{\mathrm{d}}
+\newcommand{\rec}{\mathrm{rec}}
+\renewcommand{\neg}{\mathrm{neg}}
+\newcommand{\uop}{\mathrm{uop}}
+\newcommand{\mlt}{\mathrm{mlt}}
+\newcommand{\add}{\mathrm{add}}
+\newcommand{\pow}{\mathrm{pow}}
+\newcommand{\num}{\mathrm{num}}
+\newcommand{\avg}[1]{\overline{#1}\,}
+\newcommand{\harmavg}[1]{\acute{#1}}
+\newcommand{\geomavg}[1]{\breve{#1}}
+\newcommand{\quadavg}[1]{\ddot{#1}}
+\newcommand{\invavg}[1]{\widetilde{#1}}
+\newcommand{\logavg}[1]{\widehat{#1}}
+\newcommand{\spavg}[2]{\left[\left[#1\right]\right]_{\mathrm{#2}}}
+\newcommand{\Relleno}{\texttt{Relleno}}
+\newcommand{\sage}{\texttt{SageMath}}
+
+\title{\Relleno{}: a \sage{} library \\ for jump expansions and Jacobian matrices \\ of conservation laws and entropy stability analysis}
+\author{Michael A. Hansen}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+Computational simulation of fluid flows depends heavily on our ability to construct two-point flux functions, which play a large role in the stability, accuracy, and other properties of a numerical method.
+To introduce two-point flux functions, first consider a one-dimensional hyperbolic PDE,
+\begin{equation}
+	q_t + f(q)_x = 0,
+	\label{eqn: 1d hyperbolic}
+\end{equation}
+which represents the time evolution of a quantity $q$ in space $x$ due to transport via flux $f(q)$.
+A simple flux function, which yields the canonical one-dimensional wave equation, is $f(q)=uq$ for a velocity $u$.
+Another choice which yields Burgers' equation is to use $f(q)=q^2/2$.
+Many conservation equations of physical relevance can be cast as systems of hyperbolic PDEs.
+
+When solving Equation \eqref{eqn: 1d hyperbolic} numerically, for instance with a cell-centered finite volume method, one needs to compute the flux $f$ at the faces of control volumes despite the fact that $q$ is known only at cell centers.
+A two-point flux function is simply a numerical approximation, $f^\num(q_\ell,q_r)$, to the flux $f$ at a face that involves the two surrounding states, $q_\ell$ and $q_r$ (`left' and `right').
+The two most `obvious' choices for computing the face flux are to average $q$ and compute $f$, or compute $f$ at the cells and average it, as shown below, respectively:
+\begin{equation}
+	f^\num(q_\ell,q_r) = \frac{f(q_\ell)+f(q_r)}{2},
+\end{equation}
+\begin{equation}
+	f^\num(q_\ell,q_r) = f\left(\frac{q_\ell+q_r}{2}\right).
+\end{equation}
+While the difference between these flux functions may not appear large at first glance, they will perform dramatically differently for problems involving sharp gradients or discontinuities such as shocks (gradient-steepening phenomena).
+
+The problem of choosing a two-point flux function is compounded by the fact that there are infinitely many options.
+Above we choose an arithmetic average, but in theory any two-point average is valid.
+Furthermore we can design schemes specifically for particular equation sets.
+For the wave equation with $f=uq$, we could choose a different average for the velocity and the transported quantity.
+For example,
+\begin{equation}
+	f^\num(q_\ell,q_r) = \avg{u}\logavg{q},
+\end{equation}
+where $\avg{u}$ is the arithmetic average and $\logavg{q}$ is the `logarithmic average,' a specially-defined function that is actually required in certain cases.
+Further complexity shows up if the transported quantity can be decomposed into a product, for instance $q=\rho q'$.
+Then we may represent $q$ in the flux with an average the product $\avg{\rho q'}$ or take the product of averages, \emph{i.e.}, $\logavg{q}\avg{q'}$.
+
+A key ingredient in deriving two-point flux functions which satisfy certain properties (\emph{e.g.} conservation of functions the state such as kinetic energy or entropy) is what we call the `jump expansion,' which is also referred to as `linearization.'
+Jump expansion shows up in deriving special two-point flux functions and Roe average matrices.
+Much in the same way as shown above for averages, jump expansions are not unique.
+Furthermore, computing a jump expansion is tedious and error-prone.
+The primary purpose of \Relleno{} is to automatically compute optimal jump expansions where feasible and facilitate iteration over the options where desired.
+It is specifically aimed at flux functions for the compressible Euler equations but is quite general as a library.
+
+This writeup details the mathematics underlying \Relleno{}, not the application space.
+In \S\ref{sec: expression trees} we discuss expression trees, which are crucial to the recursive jump expansion algorithm in \Relleno{}.
+Section \ref{sec: averages} details direct averages (\emph{e.g.}, arithmetic, harmonic) and special indirect averages (\emph{e.g.}, logarithmic) and introduces a handy `trick' for simplifying averages of powers of quantities (\emph{e.g.}, $\avg{x^2}$).
+Finally, \S\ref{sec: fundamental jumps} details jump expansions for fundamental elements of expression trees which are used to compose jump expansions of arbitrarily complex expressions.
+
+
+\section{Expression Trees} \label{sec: expression trees}
+\subsection{Elements of Trees} \label{sec: tree parts}
+Algebraic expressions consist of auxiliary variables $\{a\}\in\mathcal{A}\subset\mathbb{R}^{n_a}$, constants consisting\footnote{It's entirely possible that this entire document is valid for complex numbers, but we make no guarantees.} of real numbers $\mathbb{R}$ and integers $\mathbb{Z}$, and multiple-input, single-output functions $\mathcal{F}=\{f_i\colon \mathcal{A}\to\mathbb{R}\}$.
+Expression \emph{trees} are then built up through unary, binary, and $n$-ary operations, such that only constants and auxiliary variables remain as leaves of the tree.
+Expression tree decomposition is not unique!
+For instance, $f^6 = (f^3)^2 = (f^2)^3$ is three distinct tree representations for the same expression.
+It is shown in \S\ref{sec: expansion of identity} that an infinite number of trees exist for any expression.
+
+Unary operations (those involving only one expression, say $g$) are the negative, $\neg(g)=-g$, the reciprocal, $\rec(g)=1/g$, the natural logarithm $\ln(g)$, exponential $\exp(g)$, arbitrary logarithm of base $r\in\mathbb{R}^+$, $\log_r(g)$, arbitrary exponentiation of a real number $r\in\mathbb{R}$, $r^g$, trigonometric functions such as $\cos(g)$, $\sin(g)$, etc., and exponentiation of $g$ in the ways enumerated in Table \ref{tab: exponentiation options}.
+We denote a general unary operation on $g$ as $\uop(g)$.
+\begin{table}[h]
+\caption{Exponentiation of an expression $g$ with real numbers $r_+\in\mathbb{R}^+$ and $r_-\in\mathbb{R}^-, \,|r_-|=r_+$, integers $n_+, k\in\mathbb{Z}^+$ and $n_-\in\mathbb{Z}^-, \,|n_-|=n_+$.}
+\begin{center}
+\begin{tabular}{c|l|c}
+	ID & Description & Expression \\
+	\hline
+	A & arbitrary power with $r_+$ & $g^{r_+}$ \\
+	B & arbitrary power with $r_-$ & $g^{r_-}=\rec(g^{r_+})$ \\
+	C & even integer power with $n_+=2k$ & $g^{n_+}=g^{2k}=(g^k)^2$ \\
+	D & even integer power with $n_-=-2k$ & $g^{n_-}=\rec(g^{n_+})=\rec((g^k)^2)$ \\
+	E & odd integer power with $n_+=(2k+1)$ & $g^{n_+}=g^{2k}g$ \\
+	F & odd integer power with $n_-=-(2k+1)$ & $g^{n_-}=\rec(g^{n_+})=\rec(g^{2k}g)$ \\
+	G & inverse integer power with $n_+$ & $g^{1/n_+}$ \\
+	H & inverse integer power with $n_-$ & $g^{1/n_-}=\rec(g^{1/n_+})$ \\
+	\hline
+\end{tabular}
+\end{center}
+\label{tab: exponentiation options}
+\end{table}
+
+Binary operations - those involving two expressions $g$ and $h$ - are addition, $g+h=\add(g,h)$, multiplication, $gh=\mlt(g,h)$, and exponentiation, $\pow(g,h)=g^h$.
+$n$-ary operations are then simply linked binary operations.
+The associativity of addition and multiplication means we can link sub-groups in any way we like.
+The right associativity of exponentiation, however, is a key distinction - as is the accumulation of exponent expressions into a single product shown below.
+\begin{equation}
+	\begin{aligned}
+		f+g+h+k &= \add(f,\add(g, \add(h, k))), \\
+				&= \add(\add(\add(f, g), h), k), \\
+				&= \add(\add(f, g), \add(h, k)), \\
+	\end{aligned}
+	\label{eqn: nary add}
+\end{equation}
+\begin{equation}
+	\begin{aligned}
+		fghk &= \mlt(f,\mlt(g, \mlt(h, k))), \\
+			 &= \mlt(\mlt(\mlt(f, g), h), k), \\
+			 &= \mlt(\mlt(f, g), \mlt(h, k)), \\
+	\end{aligned}
+	\label{eqn: nary mlt}
+\end{equation}
+\begin{equation}
+	\begin{aligned}
+		((f^g)^h)^k &= \pow(\pow(\pow(f, g), h), k) = \pow(f, ghk), \\
+					&\neq \pow(\pow(f, g), \pow(h, k)) = (f^g)^{(h^k)}, \\
+					&\neq \pow(f, \pow(g, \pow(h, k))) = f^{(g^{(h^k)})}.
+	\end{aligned}
+\end{equation}
+
+\subsection{Expansion of Identity} \label{sec: expansion of identity}
+This section introduces a `trick' we refer to as `expansion of identity' (EOI) which allows expansion of tree representations in a way that can be helpful in computing jump expansions.
+In EOI we identify a unary ($\dim\mathfrak{D}=\dim\mathfrak{C}=1$) bijection $\mathfrak{F}:\mathfrak{D}\to\mathfrak{C}$.
+Any expression $f\in\mathfrak{D}$ can be represented as
+\begin{equation}
+	f = \mathfrak{F}(\mathfrak{F}^{-1}(f)) = \mathfrak{F}^{-1}(\mathfrak{F}(f)).
+\end{equation}
+Any $n$ such bijections could be applied in sequence to achieve arbitrary expansion of $f$.
+The purpose of expanding $f$ in this way is that certain pairs of bijection and function may yield a simplified $\mathfrak{F}(f)$ or $\mathfrak{F}^{-1}(f)$ that admits a convenient jump expansion.
+Consider, for instance, arbitrary exponentiation (binary operation), and the natural logarithm.
+We expand $g^h$ for expressions $g$ and $h$ such that $g^h>0$ to yield an exponential of a product of $h$ and $\ln(g)$:
+\begin{equation}
+	g^h = \exp(\ln g^h) = \exp(h\ln g).
+\end{equation}
+
+
+\section{Averages} \label{sec: averages}
+\subsection{Direct Averages}
+Direct two-point averages are shown in Table \ref{tab: direct avgs} along with their limits as $f_\ell,f_r\to f$.
+\begin{table}[h]
+\caption{Direct averages, symbols, expressions, and limits when the left and right states are identical.}
+\begin{center}
+\begin{tabular}{c|c|c|c}
+	Average & Symbol & Expression & Limit as $f_\ell,f_r\to f$ \\
+	\hline
+	arithmetic & $\avg{f}$ & $(f_\ell+f_r)/2$ & $f$ \\
+	harmonic & $\harmavg{f}$ & $(f_\ell f_r)/(f_\ell+f_r)$ & $f/2$ \\
+	geometric & $\geomavg{f}$ & $\sqrt{f_\ell f_r}$ & $|f|$ \\
+	quadratic & $\quadavg{f}$ & $\sqrt{(f_\ell^2+f_r^2)/2}$ & $f$ \\
+	\hline
+\end{tabular}
+\end{center}
+\label{tab: direct avgs}
+\end{table}
+
+
+\subsection{Indirect Averages}
+This section details the series approximations to important `special' indirect averages, such as the logarithmic average and exponential average.
+In general a special average is
+\begin{equation}
+	\spavg{f}{h} = \frac{\j{f}}{\j{h(f)}},
+\end{equation}
+which can be expanded with a Taylor series as
+\begin{equation}
+	\frac{1}{\spavg{f}{h}} = \frac{\j{h(f)}}{\j{f}} = \sum_{i=1}^{\infty}\frac{1}{i!}(\j{f})^{i-1}\frac{\d^{i}h}{\d f^{i}}.
+\end{equation}
+
+In checking consistency of entropy conservative fluxes, we need to evaluate special averages in the limit of $\j{f}\to0$.
+Directly from the result above we have 
+\begin{equation}
+	\lim_{\j{f}\to0}\frac{1}{\spavg{f}{h}} = \frac{\d^{i}h}{\d f^{i}}.
+\end{equation}
+
+
+\subsection{Simplification of Averages of Powers Into Powers of the Average} \label{sec: avg powers}
+In this section we show how to simplify averages of powers (\emph{e.g.} $\avg{f^2}$) into arithmetic averages, $\avg{f}$, and the product $\invavg{f} = -f_\ell f_r$, which shows up frequently in computing jump expansions.
+This is relevant in particular cases when polynomials are used and dramatic simplifications (and computational cost reduction) can be gained by expressing quantities such as $\avg{f^2}$ in terms of $\avg{f}$ and $\invavg{f}$.
+Before showing a more general derivation, consider the average of the square, $\avg{f^2}$, and the square of the average, $\avg{f}^2$:
+\begin{equation}
+	\begin{aligned}
+		\avg{f^2} &= \frac{1}{2}(f_\ell^2 + f_r^2), \\
+		\avg{f}^2 &= \frac{1}{4}(f_\ell + f_r)^2 = \frac{1}{4}(f_\ell^2 + f_r^2 + 2f_\ell f_r).
+	\end{aligned}
+\end{equation}
+These simple expansions show that we can relate the square of the average and the average of the square as
+\begin{equation}
+	2\avg{f}^2 = \avg{f^2} + f_\ell f_r = \avg{f^2} - \invavg{f} \quad \rightarrow \quad \avg{f^2} = 2\avg{f}^2 + \invavg{f}.
+\end{equation}
+
+Similarly, consider the cube:
+\begin{equation}
+	\begin{aligned}
+		\avg{f^3} &= \frac{1}{2}(f_\ell^3 + f_r^3), \\
+		\avg{f}^3 &= \frac{1}{8}(f_\ell + f_r)^3 = \frac{1}{8}(f_\ell^3 + f_r^3 + 3f_\ell^2 f_r + 3f_\ell f_r^2),
+	\end{aligned}
+\end{equation}
+which yield
+\begin{equation}
+	4\avg{f}^3 = \frac{1}{2}(2\avg{f^3} + 3f_\ell f_r(f_\ell + f_r)) = \avg{f^3} - 3\invavg{f}\avg{f} \quad \rightarrow \quad \avg{f^3} = 4\avg{f}^3 + 3\invavg{f}\avg{f}.
+\end{equation}
+
+The algebra to derive these results for $\avg{f^2}$ and $\avg{f^3}$ is tedious and grows substantially more so with increasing exponent.
+To derive a general form for $\avg{f^n}$ for $n\in\mathbb{Z}^+$ we utilize the binomial theorem, which states
+\begin{equation}
+	(x+y)^n = \sum_{k=0}^{n}\begin{pmatrix}n \\ k\end{pmatrix}x^ky^{n-k},
+\end{equation}
+which is relevant to arithmetic averages as
+\begin{equation}
+	\avg{f}^n = \left(\frac{f_\ell+f_r}{2}\right)^n = \frac{(f_\ell+f_r)^n}{2^n} = \frac{1}{2^n}\sum_{k=0}^{n}\begin{pmatrix}n \\ k\end{pmatrix}f_\ell^kf_r^{n-k}.
+\end{equation}
+
+The first and last terms in the sum may be separated out,
+\begin{equation}
+	2^n\avg{f}^n = \left[f_\ell^n + f_r^n + \sum_{k=1}^{n-1}\begin{pmatrix}n \\ k\end{pmatrix}f_\ell^kf_r^{n-k}\right] = \left[2\avg{f^n} + \sum_{k=1}^{n-1}\begin{pmatrix}n \\ k\end{pmatrix}f_\ell^kf_r^{n-k}\right].
+\end{equation}
+Next, identify that all terms remaining in the summation have $f_\ell f_r$ in them, allowing us to write
+\begin{equation}
+	2^n\avg{f}^n = \left[2\avg{f^n} + f_\ell f_r\sum_{k=1}^{n-1}\begin{pmatrix}n \\ k\end{pmatrix}f_\ell^{k-1}f_r^{n-k-1}\right] = \left[2\avg{f^n} - \invavg{f}\sum_{k=1}^{n-1}\begin{pmatrix}n \\ k\end{pmatrix}f_\ell^{k-1}f_r^{n-k-1}\right].
+\end{equation}
+Now we may pull the first `trick' of separating out the first and last terms in the summation that involve only $x_l$ or $x_r$:
+\begin{equation}
+	2^n\avg{f}^n = \left[2\avg{f^n} - \invavg{f}\left(\begin{pmatrix}n \\ 1\end{pmatrix}\left(f_\ell^{n-2}+f_r^{n-2}\right) + \sum_{k=2}^{n-2}\begin{pmatrix}n \\ k\end{pmatrix}f_\ell^{k-1}f_r^{n-k-1}\right)\right],
+\end{equation}
+which introduces another average:
+\begin{equation}
+	2^n\avg{f}^n = \left[2\avg{f^n} - \invavg{f}\left(2\begin{pmatrix}n \\ 1\end{pmatrix}\avg{f^{n-2}} + \sum_{k=2}^{n-2}\begin{pmatrix}n \\ k\end{pmatrix}f_\ell^{k-1}f_r^{n-k-1}\right)\right].
+\end{equation}
+Continuing on with the pattern, the next form is
+\begin{equation}
+	2^n\avg{f}^n = \left[2\avg{f^n} - \invavg{f}\left(2\begin{pmatrix}n \\ 1\end{pmatrix}\avg{f^{n-2}} - \invavg{f}\sum_{k=2}^{n-2}\begin{pmatrix}n \\ k\end{pmatrix}f_\ell^{k-2}f_r^{n-k-2}\right)\right],
+\end{equation}
+\begin{equation}
+	2^n\avg{f}^n = \left[2\avg{f^n} - \invavg{f}\left(2\begin{pmatrix}n \\ 1\end{pmatrix}\avg{f^{n-2}} - \invavg{f}\left[2\begin{pmatrix}n \\ 2\end{pmatrix}\avg{f^{n-4}} + \sum_{k=3}^{n-3}\begin{pmatrix}n \\ k\end{pmatrix}f_\ell^{k-2}f_r^{n-k-2}\right]\right)\right],
+\end{equation}
+which can be written as
+\begin{equation}
+	2^{n-1}\avg{f}^n = \avg{f^n} - \begin{pmatrix}n \\ 1\end{pmatrix}\invavg{f}\avg{f^{n-2}} + \begin{pmatrix}n \\ 2\end{pmatrix}\invavg{f}^2\avg{f^{n-4}} - \begin{pmatrix}n \\ 3\end{pmatrix}\invavg{f}^3\avg{f^{n-6}} + \ldots .
+\end{equation}
+
+We can write the general case as
+\begin{equation}
+	\avg{f}^n = \frac{1}{2^{n-1}}\sum_{j=0}^{2j\leq n}\begin{pmatrix}n \\ j\end{pmatrix}\left(-\invavg{f}\right)^j\avg{f^{n-2j}} = \frac{1}{2^{n-1}}\left(\avg{f^n} + \sum_{j=1}^{2j\leq n}\begin{pmatrix}n \\ j\end{pmatrix}\left(-\invavg{f}\right)^j\avg{f^{n-2j}}\right),
+\end{equation}
+which allows the following solution expression for $\avg{f^n}$, 
+\begin{equation}
+	\avg{f^n} = 2^{n-1}\avg{f}^n - \sum_{j=1}^{2j\leq n}\begin{pmatrix}n \\ j\end{pmatrix}\left(-\invavg{f}\right)^j\avg{f^{n-2j}}.
+\end{equation}
+
+
+This yields the following results for $n$ up to 7:
+\begin{equation}
+	\begin{aligned}
+		\avg{f} &= \avg{f}, \\
+		\avg{f^2} &= 2\left(\avg{f}^2 + \invavg{f}\right), \\
+		\avg{f^3} &= 4\avg{f}^3 + 3\invavg{f}\avg{f}, \\
+		\avg{f^4} &= 2\left(4\left[\avg{f}^4 + \invavg{f}\avg{f}^2\right] + \invavg{f}^2\right), \\
+		\avg{f^5} &= 16\avg{f}^5 + 20\invavg{f}\avg{f}^3 + 5\invavg{f}^2\avg{f}, \\
+		\avg{f^6} &= 2\left(16\avg{f}^6 + 24\invavg{f}\avg{f}^4 + 9\invavg{f}^2\avg{f}^2 + \invavg{f}^3\right). \\
+		\avg{f^7} &= 64\avg{f}^7 + 112\invavg{f}\avg{f}^5 + 56\invavg{f}^2\avg{f}^3 + 7\invavg{f}^3\avg{f}. \\
+	\end{aligned}
+\end{equation}
+
+The average of a polynomial can now be expressed similarly:
+\begin{equation}
+	\mathfrak{p}(f) = \sum_{i=0}^{m}a_i f^i,
+\end{equation}
+\begin{equation}
+	\avg{\mathfrak{p}(f)} = \sum_{i=0}^{m}a_i \avg{f^i} = \sum_{i=0}^{m}a_i2^{i-1}\avg{f}^i - \sum_{i=0}^{m}a_i\left(\sum_{j=1}^{2j\leq i}\begin{pmatrix}i \\ j\end{pmatrix}\left(-\invavg{f}\right)^j\avg{f^{i-2j}}\right),
+\end{equation}
+although it isn't immediately clear how one might simplify this expression further\ldots
+
+
+
+
+
+
+\section{Jump Expansions} \label{sec: fundamental jumps}
+This section details jump expansions of the fundamental elements of expression trees enumerated in \S\ref{sec: tree parts}.
+Chaining the elemental jump expansions via binary operators as discussed in \S\ref{sec: expression trees} then allows automated jump expansion of arbitrary expressions.
+
+The `jump' of a function is simply the difference across the interface,
+\begin{equation}
+	\j{f} = f_r - f_\ell,
+\end{equation}
+where in a finite volume context $f_r$ is outside of the a cell and $f_\ell$ is inside of the cell.
+The jump ratio of a function $f$ with respect to auxiliary variable $a$ is
+\begin{equation}
+	\jr{f}{a} = \frac{\j{f}}{\j{a}} = \frac{f_r - f_\ell}{a_r - a_\ell}.
+\end{equation}
+Note that as $\j{a}\to0$ we obtain the partial derivative:
+\begin{equation}
+	\lim_{\j{a}\to0}\jr{f}{a} = \frac{\partial f}{\partial a}.
+\end{equation}
+The jump expansion of a function $f(a_1,a_2,\ldots)$, denoted $\je{f}$, is the set of the pairs of variable and jump ratio,
+\begin{equation}
+	\je{f} = \left\{\left(a,\jr{f}{a}\right) : a \in \mathcal{A}\right\}.
+\end{equation}
+
+First, the jump expansion of a constant $c$ is trivial:
+\begin{equation}
+	\jr{c}{a} = 0 \quad \forall a \in \mathcal{A}.
+\end{equation}
+Next, the jump expansion of an auxiliary variable is simply a Kronecker delta,
+\begin{equation}
+	\jr{a_i}{a_j} = \delta_{ij} =
+	\begin{cases}
+		1, & i=j, \\
+		0, & i \neq j.
+	\end{cases}
+\end{equation}
+
+Binary operations between arbitrary expressions $f$ and $g$ have the following jump ratios:
+\begin{equation}
+	\jr{f+g}{a} = \frac{\j{f}+\j{g}}{\j{a}} = \frac{\j{f}}{\j{a}} + \frac{\j{g}}{\j{a}} = \jr{f}{a} + \jr{g}{a},
+\end{equation}
+\begin{equation}
+	\jr{f-g}{a} = \jr{f}{a} - \jr{g}{a},
+\end{equation}
+\begin{equation}
+	\jr{fg}{a} = \avg{f}\jr{g}{a} + \avg{g}\jr{f}{a},
+\end{equation}
+\begin{equation}
+	\jr{f/g}{a} = \jr{f\rec{g}}{a} = \avg{f}\jr{\rec{g}}{a} + \avg{\rec{g}}\jr{f}{a},
+\end{equation}
+\begin{equation}
+	\jr{f^g}{a} = \frac{1}{\spavg{g\ln f}{\exp}}\left(\avg{\ln f}\jr{g}{a} + \frac{\avg{g}}{\logavg{f}}\jr{f}{a}\right), \quad f^g > 0.
+\end{equation}
+
+Multiplication of more than two operands is treated as in \eqref{eqn: nary mlt}, which one might refer to as `left-to-right.'\footnote{
+One may group together quantities in products in \Relleno{} by creating special expressions.}
+\begin{equation}
+	\begin{aligned}
+		\jr{fghk}{a} &= \avg{ghk}\jr{f}{a} + \avg{f}\left(\avg{hk}\jr{g}{a} + \avg{g}\left[\avg{k}\jr{h}{a} + \avg{h}\jr{k}{a}\right]\right), \\
+				 &= \avg{ghk}\jr{f}{a} + \avg{f}\avg{hk}\jr{g}{a} + \avg{f}\avg{g}\avg{k}\jr{h}{a} + \avg{f}\avg{g}\avg{h}\jr{k}{a},
+	\end{aligned}
+\end{equation}
+The $n$-ary case for exponentiation is shown below.
+\begin{equation}
+	\jr{((f^g)^h)^k}{a} = \jr{f^{ghk}}{a} = \frac{1}{\spavg{ghk\ln f}{\exp}}\left(\avg{\ln f}\jr{ghk}{a} + \frac{\avg{ghk}}{\logavg{f}}\jr{f}{a}\right).
+\end{equation}
+
+Unary operations are considered generally with indirect averages except for the negative, reciprocal, and exponentiation operations.
+We define the `reciprocal average' $\invavg{f}$ here.
+\begin{equation}
+	\jr{\uop(f)}{a} = \frac{\jr{f}{a}}{\spavg{f}{\uop}},
+\end{equation}
+\begin{equation}
+	\jr{\neg(f)}{a} = -\jr{f}{a},
+\end{equation}
+\begin{equation}
+	\jr{\rec(f)}{a} = \frac{\jr{f}{a}}{\spavg{f}{\rec}} = -\frac{\jr{f}{a}}{2\avg{f}\harmavg{f}} = -\frac{\jr{f}{a}}{f_\ell f_r} = \frac{\jr{f}{a}}{\invavg{f}},
+\end{equation}
+\begin{equation}
+	\jr{\log_r(f)}{a} = \frac{1}{\ln(r)}\frac{\jr{f}{a}}{\logavg{f}}, \quad r\in\mathbb{R}^+,
+\end{equation}
+\begin{equation}
+	\jr{r^g}{a} = \frac{\ln r}{\spavg{g\ln r}{\exp}}\jr{g}{a}, \quad r\in\mathbb{R}^+.
+\end{equation}
+
+Finally we consider the exponentiation of a function, for each case described in Table \ref{tab: exponentiation options}.
+For case A (arbitrary (non-integer) power $r_+\in\mathbb{R}^+$), we have
+\begin{equation}
+	\text{case A:} \quad \jr{f^{r_+}}{a} = \frac{r_+ \jr{f}{a}}{\spavg{r_+\ln f}{\exp}\logavg{f}}.
+\end{equation}
+Case B is treated as the reciprocal of case A.
+\begin{equation}
+	\text{case B:} \quad \jr{f^{r_-}}{a} = \jr{\rec(f^{r_+})}{a} = \frac{\jr{f^{r_+}}{a}}{\spavg{f^{r_+}}{\rec}}.
+\end{equation}
+
+Next, consider cases C, D, E, and F with integer powers.
+Starting off, we give the following simple result for the square:
+\begin{equation}
+	\jr{f^2}{a} = 2\avg{f}\jr{f}{a}.
+\end{equation}
+For the cube, one simply splits an expression into a product of the quantity and the square to arrive at\footnote{Note that using the formulas in \S\ref{sec: avg powers} yields $\jr{f^3}{a} = 2\left(2\avg{f} + \invavg{f}\right)\j{f}{a}$, which is 50\% faster to compute, as it involves only two additions and multiplications while the form with $\avg{f^2}$ involves three of each.}
+\begin{equation}
+	\jr{f^3}{a} = \left(\avg{f^2} + 2\avg{f}\right)\j{f}{a}.
+\end{equation}
+For the quartic, $f^4$, and higher exponents, we are stuck with the fact that we could decompose $f^{n_+}$ into $ff^{n_+-1}$ or any other combination of exponents.
+The most cost-efficient method is to split even powers into squares and odd powers into a product of the function and the lower even power.
+Thus, case C (even power) is handled as such:
+\begin{equation}
+	\text{case C:} \quad \jr{f^{2k}}{a} = \jr{(f^k)^2}{a} = 2\avg{f^k}\jr{f^k}{a} = 2\avg{f^k}\jr{f^k}{f}\jr{f}{a}.
+\end{equation}
+And case E (odd power) is
+\begin{equation}
+	\text{case E:} \quad \jr{f^{2k+1}}{a} = \avg{f}\jr{(f^k)^2}{a} + \avg{f^{(2k)}}\jr{f}{a} = \left(2\avg{f}\avg{f^k}\jr{f^k}{f} + \avg{f^{(2k)}}\right)\jr{f}{a}.
+\end{equation}
+
+For negative integer powers (case D and F), we use the following decomposition:
+\begin{equation}
+	\jr{f^{n_-}}{a} = \jr{(1/f)^{n_+}}{(1/f)}\jr{1/f}{f}\jr{f}{a} = \frac{1}{\invavg{f}}\jr{(1/f)^{n_+}}{(1/f)}\jr{f}{a},
+\end{equation}
+where $\jr{(1/f)^{n_+}}{(1/f)}$ is handled as in case C or E.
+
+Finally for cases G and H, we handle these as if the power is an arbitrary real number, except for the square root, for which we use the form below derived from the jump expansion of the square:
+\begin{equation}
+	\jr{\sqrt{f}}{a} = \frac{1}{2\avg{\sqrt{f}}}\jr{f}{a} \quad (f>0),
+\end{equation}
+Note that the following form exists for the cube root, although we do not use it.
+Forms for larger powers likely involve more and more complex roots, making their efficient evaluation difficult, and are not pursued here.
+\begin{equation}
+	\jr{\sqrt[3]{f}}{a} = \frac{1}{2\left(\avg{\sqrt[3]{f}}\right)^2 + \avg{\left(\sqrt[3]{f}\right)^2}}\jr{f}{a}.
+\end{equation}
+
+\end{document}
+
+
+
+
+
+
+

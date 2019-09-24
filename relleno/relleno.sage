@@ -1,20 +1,38 @@
+# Relleno - a SageMath library for automatic jump expansion and convenient calculus                        
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).                       
+#                                                                                                        
+# This program is free software: you can redistribute it and/or modify                                     
+# it under the terms of the GNU General Public License as published by                                     
+# the Free Software Foundation, either version 3 of the License, or                                        
+# (at your option) any later version.                                                                      
+#                                                                                                          
+# This program is distributed in the hope that it will be useful,                                          
+# but without any warranty; without even the implied warranty of                                           
+# merchantability or fitness for a particular purpose.  See the                                            
+# GNU General Public License for more details.                                                             
+#                                                                                                          
+# You should have received a copy of the GNU General Public License                                        
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.                                    
+#                                                                                                          
+# Questions? Contact Mike Hansen (mahanse@sandia.gov)      
+
 from sage.all import show, assume, diff, sqrt, exp, latex, log, prod, vector, matrix, identity_matrix
 from sage.all import var as SageVariable
 from sage.all import SR as Symbols, RR as Reals, ZZ as Integers
 from sage.all import SageObject
 
 
-class PoblanoExpression(SageObject):
+class RellenoExpression(SageObject):
     """The class that allows `hidden' variable values, derivatives, and jump expansions.
 
-    PoblanoExpression objects can be used in most Sage expressions, although occasionally (e.g., exp, log, cos, etc.)
+    RellenoExpression objects can be used in most Sage expressions, although occasionally (e.g., exp, log, cos, etc.)
     you'll need to grab the symbol off of the object (e.g., exp(a.symbol)).
 
-    Note that it is better to build PoblanoExpression through the fxn() method of a PoblanoRing
+    Note that it is better to build RellenoExpression through the fxn() method of a RellenoRing
 
-    **Constructor** : specify a poblano ring, the symbol, and optional value, total differential, jump dictionary, and LaTeX representation
+    **Constructor** : specify a relleno ring, the symbol, and optional value, total differential, jump dictionary, and LaTeX representation
 
-    :param ring: the PoblanoRing on which this expression exists
+    :param ring: the RellenoRing on which this expression exists
     :param symbol: the symbol (a string) to use in SageMath expressions
     :param value: the value of this expression (a sage.symbolic.expression.Expression, optional, default: None)
     :param total_diff: the total differential of this expression (a sage.symbolic.expression.Expression, optional, default: None)
@@ -24,7 +42,7 @@ class PoblanoExpression(SageObject):
     Useful combinations of constructor parameters (all combinations include the ring and optionally the latex_name):
 
     1. symbol
-        With only the symbol provided, the PoblanoExpression is treated as a constant - effectively just makes a Sage variable
+        With only the symbol provided, the RellenoExpression is treated as a constant - effectively just makes a Sage variable
     2. symbol, value
         In this case the total differential and jump expansion are computed on construction from the given value
     3. symbol, total_diff
@@ -83,7 +101,7 @@ class PoblanoExpression(SageObject):
         self._is_constant = self._has_zero_diff and self._has_zero_jump
 
     def diff(self, v):
-        """Compute the derivative of this expression with respect to a variable of the PoblanoRing"""
+        """Compute the derivative of this expression with respect to a variable of the RellenoRing"""
         return self._total_diff.diff(self._ring.d(v))
 
     @property
@@ -121,7 +139,7 @@ class PoblanoExpression(SageObject):
         return self._dict
 
     def jump_coeff(self, v):
-        """Obtain the jump coefficient (ratio) of this expression with respect to a given variable of the PoblanoRing"""
+        """Obtain the jump coefficient (ratio) of this expression with respect to a given variable of the RellenoRing"""
         return self._jump_dict[v]
 
     def has_zero_jump(self, ):
@@ -129,7 +147,7 @@ class PoblanoExpression(SageObject):
         return self._has_zero_jump
 
     def __eq__(self, other):
-        if isinstance(other, PoblanoExpression):
+        if isinstance(other, RellenoExpression):
             return self._dict == other.dict and self._total_diff == other.total_diff
         else:
             return False
@@ -138,7 +156,7 @@ class PoblanoExpression(SageObject):
         return str(self)
 
     def __str__(self):
-        return 'PoblanoExpr: (' + latex(self.symbol) + ': ' + \
+        return 'RellenoExpr: (' + latex(self.symbol) + ': ' + \
                latex(self.value) + ' (' + ('constant))' if self.is_constant() else 'nonconstant))')
 
     def __hash__(self):
@@ -185,12 +203,12 @@ class PoblanoExpression(SageObject):
         return other / self._symbol
 
 
-class PoblanoRing(SageObject):
-    """The class that facilitates differentiation, averaging, and jump expansion of PoblanoExpression and Sage expressions
+class RellenoRing(SageObject):
+    """The class that facilitates differentiation, averaging, and jump expansion of RellenoExpression and Sage expressions
 
-    **Constructor**: build a PoblanoRing from a set of fundamental variables
+    **Constructor**: build a RellenoRing from a set of fundamental variables
 
-    :param name: the name of this PoblanoRing object, must be a valid Python identifier (no spaces or dashes)
+    :param name: the name of this RellenoRing object, must be a valid Python identifier (no spaces or dashes)
     :param base_variables: a list of strings representing the fundamental variables of this ring
     :param latex_name_dict: a dictionary that allows special LaTeX representations of the variables (optional, default: None)
     """
@@ -239,12 +257,12 @@ class PoblanoRing(SageObject):
         :param total_diff: the total differential of this expression (a sage.symbolic.expression.Expression, optional, default: None)
         :param jump_dict: the dictionary mapping variables to jump ratios (optional, default: None)
         :param latex_name: the LaTeX representation of this expression for Sage's pretty print (show) typesetting
-        :return: a PoblanoExpression
+        :return: a RellenoExpression
 
         Useful combinations of constructor parameters (all combinations include the ring and optionally the latex_name):
 
         1. symbol
-            With only the symbol provided, the PoblanoExpression is treated as a constant - effectively just makes a Sage variable
+            With only the symbol provided, the RellenoExpression is treated as a constant - effectively just makes a Sage variable
         2. symbol, value
             In this case the total differential and jump expansion are computed on construction from the given value
         3. symbol, total_diff
@@ -258,12 +276,12 @@ class PoblanoRing(SageObject):
         7. symbol, value, total_diff, jump_dict
             Here everything is retained in its given form
         """
-        new_expr = PoblanoExpression(self, symbol, value, total_diff, jump_dict, latex_name)
+        new_expr = RellenoExpression(self, symbol, value, total_diff, jump_dict, latex_name)
         self._fxns[new_expr.symbol] = new_expr
         return self._fxns[new_expr.symbol]
 
     def _get_all_symbolic_operands(self, an_expr):
-        if isinstance(an_expr, PoblanoExpression):
+        if isinstance(an_expr, RellenoExpression):
             return set({an_expr.symbol})
         elif an_expr in self._fxns:
             return set({an_expr})
@@ -284,11 +302,11 @@ class PoblanoRing(SageObject):
     def diff(self, expr, prim_var):
         """Compute the derivative of a Sage expression with respect to a fundamental variable of this ring"""
         dexpr = 0
-        if expr.parent() == Symbols or isinstance(expr, PoblanoExpression):
+        if expr.parent() == Symbols or isinstance(expr, RellenoExpression):
             all_ops = self._get_all_symbolic_operands(expr)
             for op in all_ops:
                 if op in self._fxns:
-                    if isinstance(expr, PoblanoExpression):
+                    if isinstance(expr, RellenoExpression):
                         dexpr += self._fxns[op].diff(prim_var)
                     else:
                         dexpr += expr.diff(op) * self._fxns[op].diff(prim_var)
@@ -304,7 +322,7 @@ class PoblanoRing(SageObject):
         if value in Reals or value in Integers or (value in Symbols and value.is_numeric()):
             return True
         else:
-            if isinstance(value, PoblanoExpression):
+            if isinstance(value, RellenoExpression):
                 return value.is_constant()
             elif value in self._fxns:
                 return self._fxns[value].is_constant()
@@ -318,7 +336,7 @@ class PoblanoRing(SageObject):
 
         :param expr: the Sage expression
         :param type: the type of average (usually 'arithmetic', 'inverse', 'logarithmic', or an operator)
-        :return: either a PoblanoExpression or a Sage expression (depending upon the input)
+        :return: either a RellenoExpression or a Sage expression (depending upon the input)
 
         This function will aggressively try to remove constants from arithmetic averages as much as possible.
         For instance, avg(2f) is returned as 2avg(f)
@@ -333,14 +351,14 @@ class PoblanoRing(SageObject):
             var_name = self._name + '_' + self._tmpsymbol + str(len(self._tmps))
 
             latex_expr = latex(expr)
-            if isinstance(expr, PoblanoExpression):
+            if isinstance(expr, RellenoExpression):
                 latex_expr = latex(expr.symbol)
             if type in self._mark_dict:
                 latex_name = self._mark_dict[type] + '{' + latex_expr + '}\,'
             else:
                 latex_name = '{\\left[\\left[' + latex_expr + '\\right]\\right]_{\\mathrm{' + type + '}}}\,'
 
-            if isinstance(expr, PoblanoExpression):
+            if isinstance(expr, RellenoExpression):
                 if var_name not in self._tmps:
                     var_val = SageVariable(var_name + '_value', latex_name=latex_name)
                     self._tmps[var_name] = {'temporary': self.fxn(var_name, var_val, latex_name=latex_name),
@@ -392,26 +410,26 @@ class PoblanoRing(SageObject):
             temp_type = self.temporaries[t]['avg type']
             temp = self.temporaries[t]['temporary'].symbol
             if temp_type == 'arithmetic':
-                if isinstance(temp_expr, PoblanoExpression):
+                if isinstance(temp_expr, RellenoExpression):
                     subs_dict[temp] = temp_expr.symbol
                 else:
                     subs_dict[temp] = temp_expr
             elif temp_type == 'inverse':
                 subs_dict[temp] = -temp_expr * temp_expr
             elif temp_type == 'logarithmic':
-                if isinstance(temp_expr, PoblanoExpression):
+                if isinstance(temp_expr, RellenoExpression):
                     subs_dict[temp] = temp_expr.symbol
                 else:
                     subs_dict[temp] = temp_expr
             else:
                 bleh = SageVariable('bleh')
                 operator_derivative = eval(temp_type + '(' + str(bleh) + ').diff(' + str(bleh) + ')')
-                if isinstance(expr, PoblanoExpression):
+                if isinstance(expr, RellenoExpression):
                     expr_to_subs = temp_expr.symbol
                 else:
                     expr_to_subs = temp_expr
                 subs_dict[temp] = operator_derivative.subs({bleh: expr_to_subs})
-        if isinstance(expr, PoblanoExpression):
+        if isinstance(expr, RellenoExpression):
             subbed_expr = expr.value
         elif expr in self._fxns:
             subbed_expr = self._fxns[expr].value
@@ -433,7 +451,7 @@ class PoblanoRing(SageObject):
     def _build_jump_expr(self, expr):
         if expr in Reals or expr in Integers or (expr in Symbols and expr.is_numeric()):
             return _ConstantExpr(expr, self)
-        if isinstance(expr, PoblanoExpression):
+        if isinstance(expr, RellenoExpression):
             return _SpecialJumpExpr(expr, self)
         elif expr in self._fxns:
             return _SpecialJumpExpr(self._fxns[expr], self)
@@ -492,7 +510,7 @@ class PoblanoRing(SageObject):
                                 else:
                                     invq = self.fxn('inverse_' + str(quantity), 1 / quantity,
                                                     latex_name='\\left(1/' + latex(quantity) + '\\right)')
-                                    if isinstance(quantity, PoblanoExpression):
+                                    if isinstance(quantity, RellenoExpression):
                                         self._invjumptmps[quantity.symbol] = invq
                                     else:
                                         self._invjumptmps[quantity] = invq
@@ -508,9 +526,9 @@ class PoblanoRing(SageObject):
 
 
 class _JumpExpr(object):
-    def __init__(self, sage_expr, poblano_ring):
+    def __init__(self, sage_expr, relleno_ring):
         self._sage_expr = sage_expr
-        self._poblano_ring = poblano_ring
+        self._relleno_ring = relleno_ring
 
     def is_constant(self):
         return False
@@ -523,8 +541,8 @@ class _JumpExpr(object):
         return self._sage_expr
 
     @property
-    def poblano_ring(self):
-        return self._poblano_ring
+    def relleno_ring(self):
+        return self._relleno_ring
 
     def has_zero_jump(self):
         return False
@@ -534,8 +552,8 @@ class _JumpExpr(object):
 
 
 class _ConstantExpr(_JumpExpr):
-    def __init__(self, sage_expr, poblano_ring):
-        _JumpExpr.__init__(self, sage_expr, poblano_ring)
+    def __init__(self, sage_expr, relleno_ring):
+        _JumpExpr.__init__(self, sage_expr, relleno_ring)
 
     def is_constant(self):
         return True
@@ -548,8 +566,8 @@ class _ConstantExpr(_JumpExpr):
 
 
 class _VariableExpr(_JumpExpr):
-    def __init__(self, sage_expr, poblano_ring):
-        _JumpExpr.__init__(self, sage_expr, poblano_ring)
+    def __init__(self, sage_expr, relleno_ring):
+        _JumpExpr.__init__(self, sage_expr, relleno_ring)
 
     def is_variable(self):
         return True
@@ -562,23 +580,23 @@ class _VariableExpr(_JumpExpr):
 
 
 class _SpecialJumpExpr(_JumpExpr):
-    def __init__(self, poblano_expr, poblano_ring):
-        self._poblano_expr = poblano_expr
-        _JumpExpr.__init__(self, poblano_expr.symbol, poblano_ring)
+    def __init__(self, relleno_expr, relleno_ring):
+        self._relleno_expr = relleno_expr
+        _JumpExpr.__init__(self, relleno_expr.symbol, relleno_ring)
 
     def jump_coeff(self, variable):
-        return self._poblano_expr.jump_coeff(variable)
+        return self._relleno_expr.jump_coeff(variable)
 
     def has_zero_jump(self):
-        return self._poblano_expr.has_zero_jump()
+        return self._relleno_expr.has_zero_jump()
 
 
 class _SumExpr(_JumpExpr):
-    def __init__(self, tree_operands, poblano_ring):
+    def __init__(self, tree_operands, relleno_ring):
         summation = tree_operands[0].sage_expr
         for to in tree_operands[1:]:
             summation += to.sage_expr
-        _JumpExpr.__init__(self, summation, poblano_ring)
+        _JumpExpr.__init__(self, summation, relleno_ring)
         self.tree_operands = tree_operands
 
     def jump_coeff(self, variable):
@@ -589,25 +607,25 @@ class _SumExpr(_JumpExpr):
 
 
 class _ProdExpr(_JumpExpr):
-    def __init__(self, tree_operands, poblano_ring):
+    def __init__(self, tree_operands, relleno_ring):
         product = tree_operands[0].sage_expr
         for to in tree_operands[1:]:
             product *= to.sage_expr
-        _JumpExpr.__init__(self, product, poblano_ring)
+        _JumpExpr.__init__(self, product, relleno_ring)
         self.tree_operands = tree_operands
         self.is_binary = len(self.tree_operands) == 2
 
     def jump_coeff(self, variable):
         if self.is_binary:
-            avg0 = self._poblano_ring.avg(self.tree_operands[0].sage_expr, 'arithmetic')
-            avg1 = self._poblano_ring.avg(self.tree_operands[1].sage_expr, 'arithmetic')
+            avg0 = self._relleno_ring.avg(self.tree_operands[0].sage_expr, 'arithmetic')
+            avg1 = self._relleno_ring.avg(self.tree_operands[1].sage_expr, 'arithmetic')
             return avg0 * self.tree_operands[1].jump_coeff(variable) + avg1 * self.tree_operands[0].jump_coeff(variable)
         else:
             # split into binary (left->right linked list) and then reapply
             left_expr = self.tree_operands[0]
-            right_expr = _ProdExpr(self.tree_operands[1:], self.poblano_ring)
-            avg0 = self._poblano_ring.avg(left_expr.sage_expr, 'arithmetic')
-            avg1 = self._poblano_ring.avg(right_expr.sage_expr, 'arithmetic')
+            right_expr = _ProdExpr(self.tree_operands[1:], self.relleno_ring)
+            avg0 = self._relleno_ring.avg(left_expr.sage_expr, 'arithmetic')
+            avg1 = self._relleno_ring.avg(right_expr.sage_expr, 'arithmetic')
             return avg0 * right_expr.jump_coeff(variable) + avg1 * left_expr.jump_coeff(variable)
 
     def has_zero_jump(self):
@@ -615,8 +633,8 @@ class _ProdExpr(_JumpExpr):
 
 
 class _LogExpr(_JumpExpr):
-    def __init__(self, tree_operand, poblano_ring):
-        _JumpExpr.__init__(self, log(tree_operand.sage_expr), poblano_ring)
+    def __init__(self, tree_operand, relleno_ring):
+        _JumpExpr.__init__(self, log(tree_operand.sage_expr), relleno_ring)
         self.tree_operand = tree_operand
 
     def jump_coeff(self, variable):
@@ -624,12 +642,12 @@ class _LogExpr(_JumpExpr):
             return 0
         elif self.tree_operand.is_variable():
             if self.tree_operand.sage_expr == variable:
-                log_avg = self._poblano_ring.avg(self.tree_operand.sage_expr, 'logarithmic')
+                log_avg = self._relleno_ring.avg(self.tree_operand.sage_expr, 'logarithmic')
                 return 1 / log_avg
             else:
                 return 0
         else:
-            log_avg = self._poblano_ring.avg(self.tree_operand.sage_expr, 'logarithmic')
+            log_avg = self._relleno_ring.avg(self.tree_operand.sage_expr, 'logarithmic')
             return 1 / log_avg * self.tree_operand.jump_coeff(variable)
 
     def has_zero_jump(self):
@@ -637,8 +655,8 @@ class _LogExpr(_JumpExpr):
 
 
 class _InvExpr(_JumpExpr):
-    def __init__(self, tree_operand, poblano_ring):
-        _JumpExpr.__init__(self, 1 / tree_operand.sage_expr, poblano_ring)
+    def __init__(self, tree_operand, relleno_ring):
+        _JumpExpr.__init__(self, 1 / tree_operand.sage_expr, relleno_ring)
         self.tree_operand = tree_operand
 
     def jump_coeff(self, variable):
@@ -646,12 +664,12 @@ class _InvExpr(_JumpExpr):
             return 0
         elif self.tree_operand.is_variable():
             if self.tree_operand.sage_expr == variable:
-                invavg = self._poblano_ring.avg(self.tree_operand.sage_expr, 'inverse')
+                invavg = self._relleno_ring.avg(self.tree_operand.sage_expr, 'inverse')
                 return 1 / invavg
             else:
                 return 0
         else:
-            invavg = self._poblano_ring.avg(self.tree_operand.sage_expr, 'inverse')
+            invavg = self._relleno_ring.avg(self.tree_operand.sage_expr, 'inverse')
             return self.tree_operand.jump_coeff(variable) / invavg
 
     def has_zero_jump(self):
@@ -659,8 +677,8 @@ class _InvExpr(_JumpExpr):
 
 
 class _GeneralExpr(_JumpExpr):
-    def __init__(self, operator, tree_operand, poblano_ring):
-        _JumpExpr.__init__(self, operator(tree_operand.sage_expr), poblano_ring)
+    def __init__(self, operator, tree_operand, relleno_ring):
+        _JumpExpr.__init__(self, operator(tree_operand.sage_expr), relleno_ring)
         self.tree_operand = tree_operand
         self.operator = operator
 
@@ -669,12 +687,12 @@ class _GeneralExpr(_JumpExpr):
             return 0
         elif self.tree_operand.is_variable():
             if self.tree_operand.sage_expr == variable:
-                genavg = self._poblano_ring.avg(self.tree_operand.sage_expr, str(self.operator))
+                genavg = self._relleno_ring.avg(self.tree_operand.sage_expr, str(self.operator))
                 return 1 / genavg
             else:
                 return 0
         else:
-            genavg = self._poblano_ring.avg(self.tree_operand.sage_expr, str(self.operator))
+            genavg = self._relleno_ring.avg(self.tree_operand.sage_expr, str(self.operator))
             return self.tree_operand.jump_coeff(variable) / genavg
 
     def has_zero_jump(self):
@@ -682,8 +700,8 @@ class _GeneralExpr(_JumpExpr):
 
 
 class _SqrtExpr(_JumpExpr):
-    def __init__(self, tree_operand, poblano_ring):
-        _JumpExpr.__init__(self, sqrt(tree_operand.sage_expr), poblano_ring)
+    def __init__(self, tree_operand, relleno_ring):
+        _JumpExpr.__init__(self, sqrt(tree_operand.sage_expr), relleno_ring)
         self.tree_operand = tree_operand
 
     def jump_coeff(self, variable):
@@ -691,12 +709,12 @@ class _SqrtExpr(_JumpExpr):
             return 0
         elif self.tree_operand.is_variable():
             if self.tree_operand.sage_expr == variable:
-                avgsqrt = self._poblano_ring.avg(sqrt(self.tree_operand.sage_expr), 'arithmetic')
+                avgsqrt = self._relleno_ring.avg(sqrt(self.tree_operand.sage_expr), 'arithmetic')
                 return 1 / (2 * avgsqrt)
             else:
                 return 0
         else:
-            avgsqrt = self._poblano_ring.avg(sqrt(self.tree_operand.sage_expr), 'arithmetic')
+            avgsqrt = self._relleno_ring.avg(sqrt(self.tree_operand.sage_expr), 'arithmetic')
             return self.tree_operand.jump_coeff(variable) / (2 * avgsqrt)
 
     def has_zero_jump(self):
@@ -704,8 +722,8 @@ class _SqrtExpr(_JumpExpr):
 
 
 class _SquareExpr(_JumpExpr):
-    def __init__(self, tree_operand, poblano_ring):
-        _JumpExpr.__init__(self, tree_operand.sage_expr ** 2, poblano_ring)
+    def __init__(self, tree_operand, relleno_ring):
+        _JumpExpr.__init__(self, tree_operand.sage_expr ** 2, relleno_ring)
         self.tree_operand = tree_operand
 
     def jump_coeff(self, variable):
@@ -713,12 +731,12 @@ class _SquareExpr(_JumpExpr):
             return 0
         elif self.tree_operand.is_variable():
             if self.tree_operand.sage_expr == variable:
-                avg = self._poblano_ring.avg(self.tree_operand.sage_expr, 'arithmetic')
+                avg = self._relleno_ring.avg(self.tree_operand.sage_expr, 'arithmetic')
                 return 2 * avg
             else:
                 return 0
         else:
-            avg = self._poblano_ring.avg(self.tree_operand.sage_expr, 'arithmetic')
+            avg = self._relleno_ring.avg(self.tree_operand.sage_expr, 'arithmetic')
             return 2 * avg * self.tree_operand.jump_coeff(variable)
 
     def has_zero_jump(self):

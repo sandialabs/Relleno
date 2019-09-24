@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>Euler1D_calorically_perfect</title>
+<title>demo_Euler1D_calorically_perfect</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -11751,9 +11751,31 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Eigendecomposition,-Entropy-Analysis,-and-Roe-Averaging-of-the-1D-Euler-Equations-for-a-Calorically-Perfect-Gas">Eigendecomposition, Entropy Analysis, and Roe Averaging of the 1D Euler Equations for a Calorically Perfect Gas<a class="anchor-link" href="#Eigendecomposition,-Entropy-Analysis,-and-Roe-Averaging-of-the-1D-Euler-Equations-for-a-Calorically-Perfect-Gas">&#182;</a></h2><p>A Demonstration of the Poblano Library</p>
+<h2 id="Eigendecomposition,-Entropy-Analysis,-and-Roe-Averaging-of-the-1D-Euler-Equations-for-a-Calorically-Perfect-Gas">Eigendecomposition, Entropy Analysis, and Roe Averaging of the 1D Euler Equations for a Calorically Perfect Gas<a class="anchor-link" href="#Eigendecomposition,-Entropy-Analysis,-and-Roe-Averaging-of-the-1D-Euler-Equations-for-a-Calorically-Perfect-Gas">&#182;</a></h2><p>A Demonstration of the relleno Library</p>
 <p>Mike Hansen</p>
 <p>May, 2019</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Relleno - a SageMath library for automatic jump expansion and convenient calculus<br>
+Copyright 2019 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).</p>
+<p>This program is free software: you can redistribute it and/or modify<br>
+it under the terms of the GNU General Public License as published by<br>
+the Free Software Foundation, either version 3 of the License, or<br>
+(at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful,<br>
+but without any warranty; without even the implied warranty of<br>
+merchantability or fitness for a particular purpose.  See the<br>
+GNU General Public License for more details.</p>
+<p>You should have received a copy of the GNU General Public License<br>
+along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+<p>Questions? Contact Mike Hansen (mahanse@sandia.gov)</p>
 
 </div>
 </div>
@@ -11772,7 +11794,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">poblano</span> <span class="kn">import</span> <span class="n">PoblanoRing</span> <span class="k">as</span> <span class="n">Poblano</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">relleno</span> <span class="kn">import</span> <span class="n">RellenoRing</span> <span class="k">as</span> <span class="n">Relleno</span>
 <span class="o">%</span><span class="k">display</span> latex
 </pre></div>
 
@@ -11786,7 +11808,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>First we build the <code>Poblano</code> object (named 'demo') with density, velocity, and temperature as primitive variables.</p>
+<p>First we build the <code>Relleno</code> object (named 'demo') with density, velocity, and temperature as primitive variables.</p>
 
 </div>
 </div>
@@ -11796,7 +11818,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">Poblano</span><span class="p">(</span><span class="s1">&#39;demo&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">])</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">Relleno</span><span class="p">(</span><span class="s1">&#39;demo&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">])</span>
 <span class="n">rho</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">vars</span>
 
 <span class="n">v</span> <span class="o">=</span> <span class="n">vector</span><span class="p">([</span><span class="n">rho</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">T</span><span class="p">])</span>
@@ -12005,7 +12027,7 @@ u - \sqrt{R T \gamma} & 0 & 0 \\
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Next we derive eigenvectors of $f_q$, which are useful for boundary conditions, stencil biasing, and dissipative fluxes. We compute eigenvectors of $\mathcal{A}_v$ and use the similarity transform to obtain eigenvectors of $f_q$.</p>
-<p>We make a <code>PoblanoExpression</code> to hide the definition of <code>a</code>, the speed of sound.</p>
+<p>We make a <code>RellenoExpression</code> to hide the definition of <code>a</code>, the speed of sound.</p>
 
 </div>
 </div>
@@ -12318,7 +12340,7 @@ Note that the entropy, due to $log(T)$ and $log(\rho)$, is not even well-defined
 The resultant flux will depend heavily upon the choice of auxiliary variables $z$.
 We first choose $z=v$ for convenience.</p>
 <p>Given the expansions $\Delta w = H\Delta z$ and $\Delta \psi = g^\mathsf{T}\Delta z$, the local constraint for entropy conservation yields the flux $f^S = (H^\mathsf{T})^{-1}g$.</p>
-<p><em>We now utilize the highlight of Poblano: automatic jump expansion.</em></p>
+<p><em>We now utilize the highlight of relleno: automatic jump expansion.</em></p>
 
 </div>
 </div>
@@ -12416,7 +12438,7 @@ We first choose $z=v$ for convenience.</p>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Now we make a very important check: we ensure that when the 'left' and 'right' states collapse the numerical flux function reduces to the physical flux - this is the <em>consistency</em> of the numerical flux function.</p>
-<p>Poblano makes it easy to check the behavior, with the <code>subs_for_consistency()</code> method.</p>
+<p>relleno makes it easy to check the behavior, with the <code>subs_for_consistency()</code> method.</p>
 
 </div>
 </div>
@@ -12475,7 +12497,7 @@ We first choose $z=v$ for convenience.</p>
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Above we showed that an entropy-conservative numerical flux function can be derived with the primitive variables used to expand the jumps, and that the resultant flux is consistent.</p>
 <p>Next we use auxiliary variables of $z=(\rho,u,Z)$ where $Z=1/T$, motivated by the prevalance of the inverse temperature in the flux function above (due to the entropy variables including $1/T$).</p>
-<p>To derive a flux function with this modified vector, we build a new <code>Poblano</code> object with the new auxiliary variables, substitute $T=1/Z$ into the expressions we need, and then compute $f^S$ as above. We show that the flux function is consistent. Note that this flux is far simpler than the one derived with temperature (instead of the inverse temperature) in the parameter vector.</p>
+<p>To derive a flux function with this modified vector, we build a new <code>Relleno</code> object with the new auxiliary variables, substitute $T=1/Z$ into the expressions we need, and then compute $f^S$ as above. We show that the flux function is consistent. Note that this flux is far simpler than the one derived with temperature (instead of the inverse temperature) in the parameter vector.</p>
 
 </div>
 </div>
@@ -12485,7 +12507,7 @@ We first choose $z=v$ for convenience.</p>
 <div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rz</span> <span class="o">=</span> <span class="n">Poblano</span><span class="p">(</span><span class="s1">&#39;with_invT&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">rho</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">])</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rz</span> <span class="o">=</span> <span class="n">Relleno</span><span class="p">(</span><span class="s1">&#39;with_invT&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">rho</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">])</span>
 <span class="n">Z</span> <span class="o">=</span> <span class="n">rz</span><span class="o">.</span><span class="n">vars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 <span class="n">wz</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">T</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">Z</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
@@ -12619,7 +12641,7 @@ We first choose $z=v$ for convenience.</p>
 <h3 id="Determining-the-Roe-Average-Matrix">Determining the Roe Average Matrix<a class="anchor-link" href="#Determining-the-Roe-Average-Matrix">&#182;</a></h3><p>The final part of this demonstration for the 1D Euler equations is computation of the 'Roe average' matrix.
 This matrix $\mathcal{A}$ comes from the idea of locally replacing the nonlinear Euler equations, $q_t + f_x = 0$, with a linear approximation, $q_t + \mathcal{A}q_x = 0$.</p>
 <p>The matrix $\mathcal{A}$ is a two-point approximation of $f_q$ and satisfies, for <em>any</em> $q_\ell$ and $q_r$, $\Delta f = \mathcal{A}\Delta q$. Furthermore it must be consistent, $\lim_{q_\ell \to q_r}\mathcal{A}=f_q$.</p>
-<p>To obtain $\mathcal{A}$ we perform a jump expansion as above, $\mathcal{C}\Delta z = \mathcal{A}\mathcal{B}\Delta z$, where $\Delta f = \mathcal{C}\Delta z$ and $\Delta q = \mathcal{B}\Delta z$. This yields $\mathcal{A} = \mathcal{C}\mathcal{B}^{-1}$. With Poblano's jump expansion capabilities, we can compute this in straightforward fashion. First we show this result with $z=v$, and afterwards we show $z$ with inverse temperature, and then with the original parameter vector that Roe used. It's clear that Roe's parameter vector yields the cleanest expression for $\mathcal{A}$.</p>
+<p>To obtain $\mathcal{A}$ we perform a jump expansion as above, $\mathcal{C}\Delta z = \mathcal{A}\mathcal{B}\Delta z$, where $\Delta f = \mathcal{C}\Delta z$ and $\Delta q = \mathcal{B}\Delta z$. This yields $\mathcal{A} = \mathcal{C}\mathcal{B}^{-1}$. With relleno's jump expansion capabilities, we can compute this in straightforward fashion. First we show this result with $z=v$, and afterwards we show $z$ with inverse temperature, and then with the original parameter vector that Roe used. It's clear that Roe's parameter vector yields the cleanest expression for $\mathcal{A}$.</p>
 
 </div>
 </div>
@@ -12763,25 +12785,31 @@ R {\overline{ \frac{1}{Z} }\,} + {\overline{ u^{2} }\,} & 2 \, {\overline{ \rho 
 <div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rroe</span> <span class="o">=</span> <span class="n">Poblano</span><span class="p">(</span><span class="s1">&#39;Roe&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;z_1&#39;</span><span class="p">,</span> <span class="s1">&#39;z_2&#39;</span><span class="p">,</span> <span class="s1">&#39;z_3&#39;</span><span class="p">],</span> <span class="n">latex_name_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;z_1&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">mathcal{W}_1&#39;</span><span class="p">,</span> <span class="s1">&#39;z_2&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">mathcal{W}_2&#39;</span><span class="p">,</span> <span class="s1">&#39;z_3&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">mathcal{W}_3&#39;</span><span class="p">})</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rroe</span> <span class="o">=</span> <span class="n">Relleno</span><span class="p">(</span><span class="s1">&#39;Roe&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;z_1&#39;</span><span class="p">,</span> <span class="s1">&#39;z_2&#39;</span><span class="p">,</span> <span class="s1">&#39;z_3&#39;</span><span class="p">],</span> <span class="n">latex_name_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;z_1&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">mathcal{W}_1&#39;</span><span class="p">,</span> <span class="s1">&#39;z_2&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">mathcal{W}_2&#39;</span><span class="p">,</span> <span class="s1">&#39;z_3&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">mathcal{W}_3&#39;</span><span class="p">})</span>
 <span class="n">Z1</span><span class="p">,</span> <span class="n">Z2</span><span class="p">,</span> <span class="n">Z3</span> <span class="o">=</span> <span class="n">rroe</span><span class="o">.</span><span class="n">vars</span>
 
-<span class="n">to_roe_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">rho</span><span class="p">:</span> <span class="n">Z1</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">Z2</span> <span class="o">/</span> <span class="n">Z1</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="p">(</span><span class="n">Z3</span> <span class="o">/</span> <span class="n">Z1</span> <span class="o">-</span> <span class="n">Z2</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">Z1</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">cv</span> <span class="o">+</span> <span class="n">R</span><span class="p">)}</span>
+<span class="n">H</span> <span class="o">=</span> <span class="n">var</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)</span>
+<span class="n">to_H_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">T</span><span class="p">:</span> <span class="p">(</span><span class="n">H</span> <span class="o">-</span> <span class="n">u</span> <span class="o">*</span> <span class="n">u</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">cv</span> <span class="o">+</span> <span class="n">R</span><span class="p">)}</span>
+<span class="n">show</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_H_dict</span><span class="p">)</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">())</span>
+<span class="n">show</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_H_dict</span><span class="p">)</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">())</span>
+<span class="n">to_roe_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">rho</span><span class="p">:</span> <span class="n">Z1</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">Z2</span> <span class="o">/</span> <span class="n">Z1</span><span class="p">,</span> <span class="n">H</span><span class="p">:</span> <span class="n">Z3</span> <span class="o">/</span> <span class="n">Z1</span><span class="p">}</span>
 
 <span class="n">Br</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">(</span><span class="n">SR</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="n">Cr</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">(</span><span class="n">SR</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-        <span class="n">Br</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">rroe</span><span class="o">.</span><span class="n">jump_coeff</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_roe_dict</span><span class="p">)</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">()</span><span class="o">.</span><span class="n">expand</span><span class="p">(),</span> <span class="n">rroe</span><span class="o">.</span><span class="n">vars</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
-        <span class="n">Cr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">rroe</span><span class="o">.</span><span class="n">jump_coeff</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_roe_dict</span><span class="p">)</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">()</span><span class="o">.</span><span class="n">expand</span><span class="p">(),</span> <span class="n">rroe</span><span class="o">.</span><span class="n">vars</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">Br</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">rroe</span><span class="o">.</span><span class="n">jump_coeff</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_H_dict</span><span class="p">)</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">()</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_roe_dict</span><span class="p">)</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">()</span><span class="o">.</span><span class="n">expand</span><span class="p">(),</span> <span class="n">rroe</span><span class="o">.</span><span class="n">vars</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">Cr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">rroe</span><span class="o">.</span><span class="n">jump_coeff</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_H_dict</span><span class="p">)</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">()</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_roe_dict</span><span class="p">)</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">()</span><span class="o">.</span><span class="n">expand</span><span class="p">(),</span> <span class="n">rroe</span><span class="o">.</span><span class="n">vars</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
 
 <span class="n">Br</span> <span class="o">=</span> <span class="n">Br</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">()</span>
 <span class="n">Cr</span> <span class="o">=</span> <span class="n">Cr</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">()</span>
 <span class="n">Ar</span> <span class="o">=</span> <span class="p">(</span><span class="n">Cr</span> <span class="o">*</span> <span class="n">Br</span><span class="o">.</span><span class="n">inverse</span><span class="p">())</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">()</span>
+<span class="n">fq</span> <span class="o">=</span> <span class="p">(</span><span class="n">fv</span> <span class="o">*</span> <span class="n">vq</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_H_dict</span><span class="p">)</span><span class="o">.</span><span class="n">simplify_full</span><span class="p">()</span>
 <span class="n">show</span><span class="p">(</span><span class="n">LatexExpr</span><span class="p">(</span><span class="s1">&#39;\mathcal{B} =&#39;</span><span class="p">),</span> <span class="n">Br</span><span class="p">)</span>
 <span class="n">show</span><span class="p">(</span><span class="n">LatexExpr</span><span class="p">(</span><span class="s1">&#39;\mathcal{C} =&#39;</span><span class="p">),</span> <span class="n">Cr</span><span class="p">)</span>
 <span class="n">show</span><span class="p">(</span><span class="n">LatexExpr</span><span class="p">(</span><span class="s1">&#39;\mathcal{A} =&#39;</span><span class="p">),</span> <span class="n">Ar</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="n">LatexExpr</span><span class="p">(</span><span class="s1">&#39;f_q = &#39;</span><span class="p">),</span> <span class="n">fq</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12791,6 +12819,22 @@ R {\overline{ \frac{1}{Z} }\,} + {\overline{ u^{2} }\,} & 2 \, {\overline{ \rho 
 <div class="output_wrapper">
 <div class="output">
 
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+<html><script type="math/tex; mode=display">\newcommand{\Bold}[1]{\mathbf{#1}}\left(\rho,\,\rho u,\,\frac{{\left(\gamma - 1\right)} \rho u^{2} + 2 \, H \rho}{2 \, \gamma}\right)</script></html>
+</div>
+
+</div>
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+<html><script type="math/tex; mode=display">\newcommand{\Bold}[1]{\mathbf{#1}}\left(\rho u,\,\frac{{\left(\gamma + 1\right)} \rho u^{2} + 2 \, {\left(H \gamma - H\right)} \rho}{2 \, \gamma},\,H \rho u\right)</script></html>
+</div>
+
+</div>
 
 <div class="output_area"><div class="prompt"></div>
 
@@ -12824,6 +12868,107 @@ R {\overline{ \frac{1}{Z} }\,} + {\overline{ u^{2} }\,} & 2 \, {\overline{ \rho 
 \frac{{\overline{ {\mathcal{W}_2} }\,}^{2} \gamma - 3 \, {\overline{ {\mathcal{W}_2} }\,}^{2}}{2 \, {\overline{ {\mathcal{W}_1} }\,}^{2}} & -\frac{{\overline{ {\mathcal{W}_2} }\,} \gamma - 3 \, {\overline{ {\mathcal{W}_2} }\,}}{{\overline{ {\mathcal{W}_1} }\,}} & \gamma - 1 \\
 \frac{{\overline{ {\mathcal{W}_2} }\,}^{3} \gamma - {\overline{ {\mathcal{W}_2} }\,}^{3} - 2 \, {\overline{ {\mathcal{W}_1} }\,} {\overline{ {\mathcal{W}_2} }\,} {\overline{ {\mathcal{W}_3} }\,}}{2 \, {\overline{ {\mathcal{W}_1} }\,}^{3}} & -\frac{{\overline{ {\mathcal{W}_2} }\,}^{2} \gamma - {\overline{ {\mathcal{W}_2} }\,}^{2} - {\overline{ {\mathcal{W}_1} }\,} {\overline{ {\mathcal{W}_3} }\,}}{{\overline{ {\mathcal{W}_1} }\,}^{2}} & \frac{{\overline{ {\mathcal{W}_2} }\,} \gamma}{{\overline{ {\mathcal{W}_1} }\,}}
 \end{array}\right)</script></html>
+</div>
+
+</div>
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+<html><script type="math/tex; mode=display">\newcommand{\Bold}[1]{\mathbf{#1}}f_q =  \left(\begin{array}{rrr}
+0 & 1 & 0 \\
+\frac{1}{2} \, {\left(\gamma - 3\right)} u^{2} & -{\left(\gamma - 3\right)} u & \gamma - 1 \\
+\frac{1}{2} \, {\left(\gamma - 1\right)} u^{3} - H u & -{\left(\gamma - 1\right)} u^{2} + H & \gamma u
+\end{array}\right)</script></html>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rho_avg</span> <span class="o">=</span> <span class="n">var</span><span class="p">(</span><span class="s1">&#39;rho_avg&#39;</span><span class="p">,</span> <span class="n">latex_name</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">rho_{</span><span class="se">\\</span><span class="s1">text{Roe}}&#39;</span><span class="p">)</span>
+<span class="n">u_avg</span> <span class="o">=</span> <span class="n">var</span><span class="p">(</span><span class="s1">&#39;u_avg&#39;</span><span class="p">,</span> <span class="n">latex_name</span><span class="o">=</span><span class="s1">&#39;u_{</span><span class="se">\\</span><span class="s1">text{Roe}}&#39;</span><span class="p">)</span>
+<span class="n">H_avg</span> <span class="o">=</span> <span class="n">var</span><span class="p">(</span><span class="s1">&#39;H_avg&#39;</span><span class="p">,</span> <span class="n">latex_name</span><span class="o">=</span><span class="s1">&#39;H_{</span><span class="se">\\</span><span class="s1">text{Roe}}&#39;</span><span class="p">)</span>
+<span class="n">to_avg_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">rho</span><span class="p">:</span> <span class="n">rho_avg</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">u_avg</span><span class="p">,</span> <span class="n">H</span><span class="p">:</span> <span class="n">H_avg</span><span class="p">}</span>
+<span class="n">show</span><span class="p">(</span><span class="n">fq</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_avg_dict</span><span class="p">))</span>
+
+<span class="n">avg_exprs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="n">fq</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_avg_dict</span><span class="p">)</span> <span class="o">==</span> <span class="n">Ar</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]):</span>
+            <span class="n">avg_exprs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fq</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_avg_dict</span><span class="p">)</span> <span class="o">==</span> <span class="n">Ar</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+<span class="n">show</span><span class="p">(</span><span class="n">avg_exprs</span><span class="p">)</span>
+<span class="n">sd</span> <span class="o">=</span> <span class="n">sd</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">avg_exprs</span><span class="p">,</span> <span class="p">[</span><span class="n">rho_avg</span><span class="p">,</span> <span class="n">u_avg</span><span class="p">,</span> <span class="n">H_avg</span><span class="p">],</span> <span class="n">solution_dict</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+<html><script type="math/tex; mode=display">\newcommand{\Bold}[1]{\mathbf{#1}}\left(\begin{array}{rrr}
+0 & 1 & 0 \\
+\frac{1}{2} \, {\left(\gamma - 3\right)} {u_{\text{Roe}}}^{2} & -{\left(\gamma - 3\right)} {u_{\text{Roe}}} & \gamma - 1 \\
+\frac{1}{2} \, {\left(\gamma - 1\right)} {u_{\text{Roe}}}^{3} - {H_{\text{Roe}}} {u_{\text{Roe}}} & -{\left(\gamma - 1\right)} {u_{\text{Roe}}}^{2} + {H_{\text{Roe}}} & \gamma {u_{\text{Roe}}}
+\end{array}\right)</script></html>
+</div>
+
+</div>
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+<html><script type="math/tex; mode=display">\newcommand{\Bold}[1]{\mathbf{#1}}\left[\frac{1}{2} \, {\left(\gamma - 3\right)} {u_{\text{Roe}}}^{2} = \frac{{\overline{ {\mathcal{W}_2} }\,}^{2} \gamma - 3 \, {\overline{ {\mathcal{W}_2} }\,}^{2}}{2 \, {\overline{ {\mathcal{W}_1} }\,}^{2}}, -{\left(\gamma - 3\right)} {u_{\text{Roe}}} = -\frac{{\overline{ {\mathcal{W}_2} }\,} \gamma - 3 \, {\overline{ {\mathcal{W}_2} }\,}}{{\overline{ {\mathcal{W}_1} }\,}}, \frac{1}{2} \, {\left(\gamma - 1\right)} {u_{\text{Roe}}}^{3} - {H_{\text{Roe}}} {u_{\text{Roe}}} = \frac{{\overline{ {\mathcal{W}_2} }\,}^{3} \gamma - {\overline{ {\mathcal{W}_2} }\,}^{3} - 2 \, {\overline{ {\mathcal{W}_1} }\,} {\overline{ {\mathcal{W}_2} }\,} {\overline{ {\mathcal{W}_3} }\,}}{2 \, {\overline{ {\mathcal{W}_1} }\,}^{3}}, -{\left(\gamma - 1\right)} {u_{\text{Roe}}}^{2} + {H_{\text{Roe}}} = -\frac{{\overline{ {\mathcal{W}_2} }\,}^{2} \gamma - {\overline{ {\mathcal{W}_2} }\,}^{2} - {\overline{ {\mathcal{W}_1} }\,} {\overline{ {\mathcal{W}_3} }\,}}{{\overline{ {\mathcal{W}_1} }\,}^{2}}, \gamma {u_{\text{Roe}}} = \frac{{\overline{ {\mathcal{W}_2} }\,} \gamma}{{\overline{ {\mathcal{W}_1} }\,}}\right]</script></html>
+</div>
+
+</div>
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+<html><script type="math/tex; mode=display">\newcommand{\Bold}[1]{\mathbf{#1}}\left[\left\{{u_{\text{Roe}}} : \frac{{\overline{ {\mathcal{W}_2} }\,}}{{\overline{ {\mathcal{W}_1} }\,}}, {\rho_{\text{Roe}}} : r_{1}, {H_{\text{Roe}}} : \frac{{\overline{ {\mathcal{W}_3} }\,}}{{\overline{ {\mathcal{W}_1} }\,}}\right\}\right]</script></html>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">show</span><span class="p">(</span><span class="n">fq</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">to_avg_dict</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span> <span class="o">*</span> <span class="n">vector</span><span class="p">(</span><span class="n">SR</span><span class="p">,</span> <span class="n">q</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+<html><script type="math/tex; mode=display">\newcommand{\Bold}[1]{\mathbf{#1}}\left(\rho u,\,\frac{1}{2} \, {\left(u^{2} + \frac{2 \, R T}{\gamma - 1}\right)} {\left(\gamma - 1\right)} \rho - \frac{{\overline{ {\mathcal{W}_2} }\,} {\left(\gamma - 3\right)} \rho u}{{\overline{ {\mathcal{W}_1} }\,}} + \frac{{\overline{ {\mathcal{W}_2} }\,}^{2} {\left(\gamma - 3\right)} \rho}{2 \, {\overline{ {\mathcal{W}_1} }\,}^{2}},\,\frac{{\left(u^{2} + \frac{2 \, R T}{\gamma - 1}\right)} {\overline{ {\mathcal{W}_2} }\,} \gamma \rho}{2 \, {\overline{ {\mathcal{W}_1} }\,}} - {\left(\frac{{\overline{ {\mathcal{W}_2} }\,}^{2} {\left(\gamma - 1\right)}}{{\overline{ {\mathcal{W}_1} }\,}^{2}} - \frac{{\overline{ {\mathcal{W}_3} }\,}}{{\overline{ {\mathcal{W}_1} }\,}}\right)} \rho u + \frac{1}{2} \, {\left(\frac{{\overline{ {\mathcal{W}_2} }\,}^{3} {\left(\gamma - 1\right)}}{{\overline{ {\mathcal{W}_1} }\,}^{3}} - \frac{2 \, {\overline{ {\mathcal{W}_2} }\,} {\overline{ {\mathcal{W}_3} }\,}}{{\overline{ {\mathcal{W}_1} }\,}^{2}}\right)} \rho\right)</script></html>
 </div>
 
 </div>
@@ -12866,7 +13011,7 @@ R {\overline{ \frac{1}{Z} }\,} + {\overline{ u^{2} }\,} & 2 \, {\overline{ \rho 
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-<html><script type="math/tex; mode=display">\newcommand{\Bold}[1]{\mathbf{#1}}\left(\frac{{\left(2 \, R \gamma \log\left({\mathcal{W}_1}\right) + 2 \, R \gamma + R \log\left(2\right) + R \log\left(R\right) - R \log\left(\gamma - 1\right) + R \log\left(\gamma\right)\right)} {\mathcal{W}_2}^{2} - 2 \, {\left(2 \, R \gamma {\mathcal{W}_1} \log\left({\mathcal{W}_1}\right) + {\left(R \gamma + R \log\left(2\right) + R \log\left(R\right) - R \log\left(\gamma - 1\right) + R \log\left(\gamma\right)\right)} {\mathcal{W}_1}\right)} {\mathcal{W}_3} - {\left(R {\mathcal{W}_2}^{2} - 2 \, R {\mathcal{W}_1} {\mathcal{W}_3}\right)} \log\left(-{\mathcal{W}_2}^{2} + 2 \, {\mathcal{W}_1} {\mathcal{W}_3}\right)}{{\left(\gamma - 1\right)} {\mathcal{W}_2}^{2} - 2 \, {\left(\gamma - 1\right)} {\mathcal{W}_1} {\mathcal{W}_3}},\,-\frac{2 \, R \gamma {\mathcal{W}_1} {\mathcal{W}_2}}{{\left(\gamma - 1\right)} {\mathcal{W}_2}^{2} - 2 \, {\left(\gamma - 1\right)} {\mathcal{W}_1} {\mathcal{W}_3}},\,\frac{2 \, R \gamma {\mathcal{W}_1}^{2}}{{\left(\gamma - 1\right)} {\mathcal{W}_2}^{2} - 2 \, {\left(\gamma - 1\right)} {\mathcal{W}_1} {\mathcal{W}_3}}\right)</script></html>
+<html><script type="math/tex; mode=display">\newcommand{\Bold}[1]{\mathbf{#1}}\left(\frac{4 \, {\left(R T \gamma - R T\right)} {\mathcal{W}_1}^{2} \log\left({\mathcal{W}_1}\right) + 2 \, {\left(R T \gamma - R T \log\left(T\right)\right)} {\mathcal{W}_1}^{2} - {\left(\gamma - 1\right)} {\mathcal{W}_2}^{2}}{2 \, {\left(T \gamma - T\right)} {\mathcal{W}_1}^{2}},\,\frac{{\mathcal{W}_2}}{T {\mathcal{W}_1}},\,-\frac{1}{T}\right)</script></html>
 </div>
 
 </div>
@@ -12888,17 +13033,17 @@ R {\overline{ \frac{1}{Z} }\,} + {\overline{ u^{2} }\,} & 2 \, {\overline{ \rho 
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Roe <em>is</em> responsible for an entropy conservative flux function, derived with a different parameter vector, defined as $\theta_1=\sqrt{\rho/p}$, $\theta_2=\sqrt{\rho/p}u$, $\theta_3=\sqrt{\rho/p}p$. We show this derivation here, which we note is very straightforward and fast with Poblano (compared to doing the algebra entirely manually). This will be the third entropy conservative flux function we've derived, all without tedious, error-prone math by hand.</p>
+<p>Roe <em>is</em> responsible for an entropy conservative flux function, derived with a different parameter vector, defined as $\theta_1=\sqrt{\rho/p}$, $\theta_2=\sqrt{\rho/p}u$, $\theta_3=\sqrt{\rho/p}p$. We show this derivation here, which we note is very straightforward and fast with Relleno (compared to doing the algebra entirely manually). This will be the third entropy conservative flux function we've derived, all without tedious, error-prone math by hand.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[28]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rroe2</span> <span class="o">=</span> <span class="n">Poblano</span><span class="p">(</span><span class="s1">&#39;Roe2&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;z_12&#39;</span><span class="p">,</span> <span class="s1">&#39;z_22&#39;</span><span class="p">,</span> <span class="s1">&#39;z_32&#39;</span><span class="p">],</span> <span class="n">latex_name_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;z_12&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">theta_1&#39;</span><span class="p">,</span> <span class="s1">&#39;z_22&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">theta_2&#39;</span><span class="p">,</span> <span class="s1">&#39;z_32&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">theta_3&#39;</span><span class="p">})</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rroe2</span> <span class="o">=</span> <span class="n">Relleno</span><span class="p">(</span><span class="s1">&#39;Roe2&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;z_12&#39;</span><span class="p">,</span> <span class="s1">&#39;z_22&#39;</span><span class="p">,</span> <span class="s1">&#39;z_32&#39;</span><span class="p">],</span> <span class="n">latex_name_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;z_12&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">theta_1&#39;</span><span class="p">,</span> <span class="s1">&#39;z_22&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">theta_2&#39;</span><span class="p">,</span> <span class="s1">&#39;z_32&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">theta_3&#39;</span><span class="p">})</span>
 <span class="n">T1</span><span class="p">,</span> <span class="n">T2</span><span class="p">,</span> <span class="n">T3</span> <span class="o">=</span> <span class="n">rroe2</span><span class="o">.</span><span class="n">vars</span>
 
 <span class="n">to_roe2_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">rho</span><span class="p">:</span> <span class="n">T1</span> <span class="o">*</span> <span class="n">T3</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">T2</span> <span class="o">/</span> <span class="n">T1</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span> <span class="o">*</span> <span class="n">T1</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)}</span>
@@ -12992,10 +13137,10 @@ R {\overline{ {\theta_2} }\,} & R {\overline{ {\theta_1} }\,} & 0 \\
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[38]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rckr</span> <span class="o">=</span> <span class="n">Poblano</span><span class="p">(</span><span class="s1">&#39;Roe2&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">rho</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="s1">&#39;Z_ckr&#39;</span><span class="p">],</span> <span class="n">latex_name_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Z_ckr&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">pi_3&#39;</span><span class="p">})</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rckr</span> <span class="o">=</span> <span class="n">Relleno</span><span class="p">(</span><span class="s1">&#39;Roe2&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">rho</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="s1">&#39;Z_ckr&#39;</span><span class="p">],</span> <span class="n">latex_name_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Z_ckr&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">pi_3&#39;</span><span class="p">})</span>
 <span class="n">Z_ckr</span> <span class="o">=</span> <span class="n">rckr</span><span class="o">.</span><span class="n">vars</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
 <span class="n">to_ckr_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">T</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">Z_ckr</span><span class="p">)}</span>
