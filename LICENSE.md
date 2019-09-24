@@ -1,7 +1,13 @@
-Relleno 1.0: Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
+Relleno - a SageMath library for automatic jump expansion and convenient calculus                        
+Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).  
+
+Version 1.0
 
 Under the terms of Contract DE-NA0003525 with NTESS, 
 the U.S. Government retains certain rights in this software.
+
+Questions? Contact Mike Hansen (mahanse@sandia.gov)
+
 
 GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
@@ -624,5 +630,3 @@ Program, unless a warranty or assumption of liability accompanies a
 copy of the Program in return for a fee.
 
 END OF TERMS AND CONDITIONS
-
-Questions? Contact Mike Hansen (mahanse@sandia.gov)
