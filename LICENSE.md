@@ -8,6 +8,7 @@ the U.S. Government retains certain rights in this software.
 
 Questions? Contact Mike Hansen (mahanse@sandia.gov)
 
+The SageMath license may be found here: http://doc.sagemath.org/html/en/reference/history_and_license/index.html
 
 GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
