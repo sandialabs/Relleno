@@ -44,7 +44,7 @@ class SageInstall(install):
 setup(
     name = 'poblano',
     version = readfile('VERSION'),
-    description='A SageMath library for jump expansions and Jacobian matrices of conservation laws and entropy stability analysis',
+    description='a SageMath library for automatic jump expansion and convenient calculus',
     long_description = readfile('README.md'),
     license='BSD-2-Clause',
     author='Michael A. Hansen',

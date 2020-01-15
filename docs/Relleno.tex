@@ -1,22 +1,3 @@
-% Relleno - a SageMath library for automatic jump expansion and convenient calculus
-% Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
-%
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-%
-% Questions? Contact Mike Hansen (mahanse@sandia.gov)
-%
-
 \documentclass[10pt]{article}
 
 \usepackage{mathpazo}
@@ -56,13 +37,18 @@
 \maketitle
 
 \section{Introduction}
-Computational simulation of fluid flows depends heavily on our ability to construct two-point flux functions, which play a large role in the stability, accuracy, and other properties of a numerical method.
-To introduce two-point flux functions, first consider a one-dimensional hyperbolic PDE,
+\Relleno{} is a library atop the \sage{} symbolic manipulation code that facilitates derivation of new techniques for numerically solving conservation laws in scientific computing.
+Computational simulation of fluid flow across the ranges of high-speed compressible gases, incompressible liquids, and magnetohydrodynamic flows depends on our ability to construct two-point flux functions, which play a large role in the stability, accuracy, and other properties of a numerical method.
+A simple scheme requiring two-point flux functions is a classical cell-centered finite volume method wherein solution data exists at cell centers while fluxes are needed at cell faces.
+Favorable properties of a simulation such as stability, accuracy, and preservation of quantities such as kinetic energy and entropy functions translate into requirements on two-point flux functions.
+\Relleno{} facilitates derivation of special flux functions, particularly in the context of entropy stable methods for hyperbolic conservation laws.
+
+As a simple example, consider a one-dimensional hyperbolic PDE,
 \begin{equation}
 	q_t + f(q)_x = 0,
 	\label{eqn: 1d hyperbolic}
 \end{equation}
-which represents the time evolution of a quantity $q$ in space $x$ due to transport via flux $f(q)$.
+which represents the time evolution of a quantity $q$ in space $x$ due to the flux $f(q)$.
 A simple flux function, which yields the canonical one-dimensional wave equation, is $f(q)=uq$ for a velocity $u$.
 Another choice which yields Burgers' equation is to use $f(q)=q^2/2$.
 Many conservation equations of physical relevance can be cast as systems of hyperbolic PDEs.
@@ -71,10 +57,10 @@ When solving Equation \eqref{eqn: 1d hyperbolic} numerically, for instance with 
 A two-point flux function is simply a numerical approximation, $f^\num(q_\ell,q_r)$, to the flux $f$ at a face that involves the two surrounding states, $q_\ell$ and $q_r$ (`left' and `right').
 The two most `obvious' choices for computing the face flux are to average $q$ and compute $f$, or compute $f$ at the cells and average it, as shown below, respectively:
 \begin{equation}
-	f^\num(q_\ell,q_r) = \frac{f(q_\ell)+f(q_r)}{2},
+	f^\num(q_\ell,q_r) = f\left(\frac{q_\ell+q_r}{2}\right).
 \end{equation}
 \begin{equation}
-	f^\num(q_\ell,q_r) = f\left(\frac{q_\ell+q_r}{2}\right).
+	f^\num(q_\ell,q_r) = \frac{f(q_\ell)+f(q_r)}{2},
 \end{equation}
 While the difference between these flux functions may not appear large at first glance, they will perform dramatically differently for problems involving sharp gradients or discontinuities such as shocks (gradient-steepening phenomena).
 
@@ -88,30 +74,30 @@ For example,
 \end{equation}
 where $\avg{u}$ is the arithmetic average and $\logavg{q}$ is the `logarithmic average,' a specially-defined function that is actually required in certain cases.
 Further complexity shows up if the transported quantity can be decomposed into a product, for instance $q=\rho q'$.
-Then we may represent $q$ in the flux with an average the product $\avg{\rho q'}$ or take the product of averages, \emph{i.e.}, $\logavg{q}\avg{q'}$.
+Then we may represent $q$ in the flux with an average the product $\avg{\rho q'}$ or take the product of averages, \emph{i.e.}, $\logavg{\rho}\avg{q'}$.
 
-A key ingredient in deriving two-point flux functions which satisfy certain properties (\emph{e.g.} conservation of functions the state such as kinetic energy or entropy) is what we call the `jump expansion,' which is also referred to as `linearization.'
-Jump expansion shows up in deriving special two-point flux functions and Roe average matrices.
+A key ingredient in deriving two-point flux functions which satisfy certain properties (\emph{e.g.} conservation of functions the state such as kinetic energy or an entropy function) is what we call the `jump expansion' which is also referred to as `linearization.'
+Jump expansion appears naturally in deriving special two-point flux functions and Roe average matrices.
 Much in the same way as shown above for averages, jump expansions are not unique.
 Furthermore, computing a jump expansion is tedious and error-prone.
 The primary purpose of \Relleno{} is to automatically compute optimal jump expansions where feasible and facilitate iteration over the options where desired.
-It is specifically aimed at flux functions for the compressible Euler equations but is quite general as a library.
+It is specifically aimed at flux functions for the compressible Euler and Navier-Stokes equations but is a general-purpose library.
+\Relleno{} also facilitates calculus involving complicated systems of equations whose Jacobian matrices, especially those relevant to entropy stability analysis, are awkward to derive with \sage{} alone.
 
-This writeup details the mathematics underlying \Relleno{}, not the application space.
-In \S\ref{sec: expression trees} we discuss expression trees, which are crucial to the recursive jump expansion algorithm in \Relleno{}.
+This writeup is effectively the `theory manual' of \Relleno{}, detailing the mathematics underlying \Relleno{}, not its usage or application space.
+In \S\ref{sec: expression trees} we discuss expression trees, which are necessary for the recursive jump expansion algorithm in \Relleno{}.
 Section \ref{sec: averages} details direct averages (\emph{e.g.}, arithmetic, harmonic) and special indirect averages (\emph{e.g.}, logarithmic) and introduces a handy `trick' for simplifying averages of powers of quantities (\emph{e.g.}, $\avg{x^2}$).
 Finally, \S\ref{sec: fundamental jumps} details jump expansions for fundamental elements of expression trees which are used to compose jump expansions of arbitrarily complex expressions.
 
 
 \section{Expression Trees} \label{sec: expression trees}
 \subsection{Elements of Trees} \label{sec: tree parts}
-Algebraic expressions consist of auxiliary variables $\{a\}\in\mathcal{A}\subset\mathbb{R}^{n_a}$, constants consisting\footnote{It's entirely possible that this entire document is valid for complex numbers, but we make no guarantees.} of real numbers $\mathbb{R}$ and integers $\mathbb{Z}$, and multiple-input, single-output functions $\mathcal{F}=\{f_i\colon \mathcal{A}\to\mathbb{R}\}$.
+We categorize elements of algebraic expressions into auxiliary variables, $\mathcal{A}\subset\mathbb{R}^{n_a}$, constants\footnote{It's entirely possible that this entire document is valid for complex numbers, but we make no guarantees.} which are real numbers $\mathbb{R}$ and integers $\mathbb{Z}$, and multiple-input, single-output functions of constants and auxiliary variables, $\mathcal{F}=\{f_i\colon \mathcal{A}\to\mathbb{R}\}$.
 Expression \emph{trees} are then built up through unary, binary, and $n$-ary operations, such that only constants and auxiliary variables remain as leaves of the tree.
-Expression tree decomposition is not unique!
+Expression tree decomposition is not unique.
 For instance, $f^6 = (f^3)^2 = (f^2)^3$ is three distinct tree representations for the same expression.
-It is shown in \S\ref{sec: expansion of identity} that an infinite number of trees exist for any expression.
 
-Unary operations (those involving only one expression, say $g$) are the negative, $\neg(g)=-g$, the reciprocal, $\rec(g)=1/g$, the natural logarithm $\ln(g)$, exponential $\exp(g)$, arbitrary logarithm of base $r\in\mathbb{R}^+$, $\log_r(g)$, arbitrary exponentiation of a real number $r\in\mathbb{R}$, $r^g$, trigonometric functions such as $\cos(g)$, $\sin(g)$, etc., and exponentiation of $g$ in the ways enumerated in Table \ref{tab: exponentiation options}.
+Unary operations involving only one expression, say, $g$, include the negative, $\neg(g)=-g$, the reciprocal, $\rec(g)=1/g$, the natural logarithm $\ln(g)$, exponential $\exp(g)$, arbitrary logarithm of base $r\in\mathbb{R}^+$, $\log_r(g)$, arbitrary exponentiation of a real number $r\in\mathbb{R}$, $r^g$, trigonometric functions such as $\cos(g)$, $\sin(g)$, etc., and exponentiation of $g$ in the ways enumerated in Table \ref{tab: exponentiation options}.
 We denote a general unary operation on $g$ as $\uop(g)$.
 \begin{table}[h]
 \caption{Exponentiation of an expression $g$ with real numbers $r_+\in\mathbb{R}^+$ and $r_-\in\mathbb{R}^-, \,|r_-|=r_+$, integers $n_+, k\in\mathbb{Z}^+$ and $n_-\in\mathbb{Z}^-, \,|n_-|=n_+$.}
@@ -163,7 +149,7 @@ The right associativity of exponentiation, however, is a key distinction - as is
 
 \subsection{Expansion of Identity} \label{sec: expansion of identity}
 This section introduces a `trick' we refer to as `expansion of identity' (EOI) which allows expansion of tree representations in a way that can be helpful in computing jump expansions.
-In EOI we identify a unary ($\dim\mathfrak{D}=\dim\mathfrak{C}=1$) bijection $\mathfrak{F}:\mathfrak{D}\to\mathfrak{C}$.
+In EOI we identify a bijection $\mathfrak{F}:\mathfrak{D}\to\mathfrak{C}$ that is a unary operation ($\dim\mathfrak{D}=\dim\mathfrak{C}=1$).
 Any expression $f\in\mathfrak{D}$ can be represented as
 \begin{equation}
 	f = \mathfrak{F}(\mathfrak{F}^{-1}(f)) = \mathfrak{F}^{-1}(\mathfrak{F}(f)).
@@ -175,7 +161,6 @@ We expand $g^h$ for expressions $g$ and $h$ such that $g^h>0$ to yield an expone
 \begin{equation}
 	g^h = \exp(\ln g^h) = \exp(h\ln g).
 \end{equation}
-
 
 \section{Averages} \label{sec: averages}
 \subsection{Direct Averages}
@@ -211,7 +196,7 @@ which can be expanded with a Taylor series as
 In checking consistency of entropy conservative fluxes, we need to evaluate special averages in the limit of $\j{f}\to0$.
 Directly from the result above we have 
 \begin{equation}
-	\lim_{\j{f}\to0}\frac{1}{\spavg{f}{h}} = \frac{\d^{i}h}{\d f^{i}}.
+	\lim_{\j{f}\to0}\frac{1}{\spavg{f}{h}} = \frac{\d h}{\d f}.
 \end{equation}
 
 
@@ -441,7 +426,7 @@ Finally for cases G and H, we handle these as if the power is an arbitrary real 
 	\jr{\sqrt{f}}{a} = \frac{1}{2\avg{\sqrt{f}}}\jr{f}{a} \quad (f>0),
 \end{equation}
 Note that the following form exists for the cube root, although we do not use it.
-Forms for larger powers likely involve more and more complex roots, making their efficient evaluation difficult, and are not pursued here.
+Forms for larger powers likely involve more and more complicated roots, making their efficient evaluation difficult, and are not pursued here.
 \begin{equation}
 	\jr{\sqrt[3]{f}}{a} = \frac{1}{2\left(\avg{\sqrt[3]{f}}\right)^2 + \avg{\left(\sqrt[3]{f}\right)^2}}\jr{f}{a}.
 \end{equation}
