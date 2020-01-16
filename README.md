@@ -32,3 +32,6 @@ The `docs/Relleno.pdf` file details the theory underlying `Relleno`. It probably
 # Demonstrations
 To see `Relleno` in use, check out the `demo` folder.
 There are several `.ipynb` files for use with the Jupyter notebook interface to SageMath (`sage -n jupyter`).
+
+# Help
+If you need help installing or using `Relleno`, please write up an issue on the GitHub page or email Mike Hansen at mahanse@sandia.gov.
